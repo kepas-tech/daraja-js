@@ -69,6 +69,23 @@ export {
   type RegisterUrlsInput,
   type RegisterUrlsResult,
 } from './resources/c2b.js';
+// Reversal — request + result parsing + recipient-spend classifier
+export {
+  isSettledByRecipientSpend,
+  parseReversalResult,
+  type ReversalAck,
+  type ReversalInput,
+  type ReversalResult,
+} from './resources/reversal.js';
+// Transaction status — STK (sync) + transaction (async)
+export {
+  parseStatusResult,
+  type StatusAck,
+  type StatusResult,
+  type StkStatusInput,
+  type StkStatusResult,
+  type TransactionStatusInput,
+} from './resources/status.js';
 export {
   parseStkCallback,
   type StkCallbackResult,

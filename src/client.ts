@@ -20,6 +20,19 @@ import {
   query as balanceQuery,
 } from './resources/balance.js';
 import { type RegisterUrlsInput, type RegisterUrlsResult, registerUrls } from './resources/c2b.js';
+import {
+  type ReversalAck,
+  type ReversalInput,
+  request as reversalRequest,
+} from './resources/reversal.js';
+import {
+  type StatusAck,
+  type StkStatusInput,
+  type StkStatusResult,
+  stkPush as statusStkPush,
+  transaction as statusTransaction,
+  type TransactionStatusInput,
+} from './resources/status.js';
 import { type StkPushInput, type StkPushResult, stkPush } from './resources/stk-push.js';
 
 export interface DarajaConfig {
@@ -79,6 +92,17 @@ export class Daraja {
     transferFloat: (input: FloatTransferInput) => Promise<B2bAck>;
   };
 
+  /** Transaction status — STK Push (sync) and any transaction (async). */
+  readonly status: {
+    stkPush: (input: StkStatusInput) => Promise<StkStatusResult>;
+    transaction: (input: TransactionStatusInput) => Promise<StatusAck>;
+  };
+
+  /** Reverse a transaction back to the payer. */
+  readonly reversal: {
+    request: (input: ReversalInput) => Promise<ReversalAck>;
+  };
+
   constructor(config: DarajaConfig) {
     validateConfig(config);
     this.config = config;
@@ -109,6 +133,13 @@ export class Daraja {
     this.b2b = {
       pay: (input) => b2bPay(this.http, this.config, input),
       transferFloat: (input) => b2bTransferFloat(this.http, this.config, input),
+    };
+    this.status = {
+      stkPush: (input) => statusStkPush(this.http, this.config, input),
+      transaction: (input) => statusTransaction(this.http, this.config, input),
+    };
+    this.reversal = {
+      request: (input) => reversalRequest(this.http, this.config, input),
     };
   }
 }

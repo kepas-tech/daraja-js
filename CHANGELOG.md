@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.6.0
+
+### Minor Changes
+
+- Add transaction status queries and reversal.
+
+  - `daraja.status.stkPush({ checkoutRequestId })` — synchronous STK Push status
+    query (returns the outcome inline; passkey auth).
+  - `daraja.status.transaction({ transactionId, resultUrl, queueTimeoutUrl })` —
+    async transaction status query (initiator-authed). `parseStatusResult` for the
+    callback.
+  - `daraja.reversal.request({ transactionId, amount, resultUrl, queueTimeoutUrl })`
+    — reverse a transaction (initiator-authed). `parseReversalResult` for the
+    callback.
+  - `isSettledByRecipientSpend(resultDesc)` — conservative classifier for the
+    "recipient already spent the funds" reversal failure (gotcha #16, no stable
+    ResultCode).
+
 ## 0.5.0
 
 ### Minor Changes
