@@ -6,6 +6,13 @@
 import { TokenManager, type TokenResponse } from './auth.js';
 import { DarajaAuthError, DarajaValidationError } from './errors.js';
 import { HttpClient } from './http.js';
+import {
+  type B2bAck,
+  type B2bPayInput,
+  pay as b2bPay,
+  transferFloat as b2bTransferFloat,
+  type FloatTransferInput,
+} from './resources/b2b.js';
 import { type B2cSendInput, type B2cSendResult, send as b2cSend } from './resources/b2c.js';
 import {
   type BalanceQueryInput,
@@ -66,6 +73,12 @@ export class Daraja {
     query: (input: BalanceQueryInput) => Promise<BalanceQueryResult>;
   };
 
+  /** B2B — pay another business, or move float between Working↔Utility. */
+  readonly b2b: {
+    pay: (input: B2bPayInput) => Promise<B2bAck>;
+    transferFloat: (input: FloatTransferInput) => Promise<B2bAck>;
+  };
+
   constructor(config: DarajaConfig) {
     validateConfig(config);
     this.config = config;
@@ -92,6 +105,10 @@ export class Daraja {
     };
     this.balance = {
       query: (input) => balanceQuery(this.http, this.config, input),
+    };
+    this.b2b = {
+      pay: (input) => b2bPay(this.http, this.config, input),
+      transferFloat: (input) => b2bTransferFloat(this.http, this.config, input),
     };
   }
 }

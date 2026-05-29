@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0
+
+### Minor Changes
+
+- Add B2B — pay another business + float transfers.
+
+  - `daraja.b2b.pay({ toShortcode, amount, commandId?, accountReference?, ... })`
+    — pay another PayBill (`BusinessPayBill`) or Till (`BusinessBuyGoods`, receiver
+    identifier 2). Numeric parties, initiator-authed.
+  - `daraja.b2b.transferFloat({ amount, direction })` — move money Working(MMF)↔
+    Utility on your own shortcode (`BusinessTransferFromMMFToUtility` /
+    `...UtilityToMMF`). This is how you fund B2C (gotcha #7).
+  - `parseB2bResult` — parse the async result callback.
+
+  Sends Daraja's misspelled `RecieverIdentifierType` exactly as the API expects.
+
 ## 0.4.0
 
 ### Minor Changes

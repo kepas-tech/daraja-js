@@ -188,6 +188,7 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 - `parseStkCallback` — parse the async STK result Safaricom posts back.
 - `c2b.registerUrls` + `parseC2bConfirmation` / `parseC2bValidation` + `c2bAccept` / `c2bReject` — capture direct PayBill/Till payments (confirmation is terminal — gotcha #8).
 - `b2c.send` + `parseB2cResult` — disburse to a customer phone (money out; Utility account — gotcha #7).
+- `b2b.pay` + `b2b.transferFloat` + `parseB2bResult` — pay another business, and move float Working↔Utility (funds B2C).
 - `generateSecurityCredential` — RSA-encrypt the initiator password for the initiator-authed APIs.
 - `balance.query` + `parseBalanceResult` / `parseAccountBalance` — query account balances, with the pipe-delimited parser (gotcha #6).
 - `webhooks.sign` / `constructEvent` / `constructEventAsync` — Stripe-compatible signing + verification (sync + edge).
@@ -197,7 +198,7 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 
 **On the [roadmap](./ROADMAP.md) (committed APIs, not yet shipped):**
 
-`b2b.pay` / float transfers · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate`.
+`transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate`.
 
 Full surface in the [API reference](./docs) (published with each release).
 

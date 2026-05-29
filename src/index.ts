@@ -31,6 +31,15 @@ export {
   DarajaValidationError,
   errorFromResult,
 } from './errors.js';
+// B2B — pay another business + float transfers
+export {
+  type B2bAck,
+  type B2bCommandId,
+  type B2bPayInput,
+  type B2bResult,
+  type FloatTransferInput,
+  parseB2bResult,
+} from './resources/b2b.js';
 // B2C — disbursement + result parsing
 export {
   type B2cCommandId,
