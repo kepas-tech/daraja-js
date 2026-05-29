@@ -18,15 +18,31 @@ export interface DarajaErrorContext {
 /** Base class for every error thrown by the SDK. */
 export class DarajaError extends Error {
   readonly requestId?: string | undefined;
-  readonly raw?: unknown;
+  /**
+   * Raw response payload, for explicit debugging. **Non-enumerable** so it is
+   * not dumped into logs by `JSON.stringify`/`console.log`/error serializers —
+   * Daraja responses can carry customer PII (MSISDN, receipts). Access via
+   * `err.raw` when you actually need it.
+   */
+  declare readonly raw?: unknown;
 
   constructor(message: string, context: Pick<DarajaErrorContext, 'requestId' | 'raw'> = {}) {
     super(message);
     this.name = new.target.name;
     this.requestId = context.requestId;
-    this.raw = context.raw;
+    Object.defineProperty(this, 'raw', {
+      value: context.raw,
+      enumerable: false,
+      writable: false,
+      configurable: true,
+    });
     // Restore prototype chain for transpiled/extends-Error correctness.
     Object.setPrototypeOf(this, new.target.prototype);
+  }
+
+  /** Safe, raw-free serialization (used by `JSON.stringify`). */
+  toJSON(): Record<string, unknown> {
+    return { name: this.name, message: this.message, requestId: this.requestId };
   }
 }
 
@@ -51,6 +67,10 @@ export class DarajaAPIError extends DarajaError {
     super(message, { requestId: context.requestId, raw: context.raw });
     this.resultCode = context.resultCode;
     this.resultDesc = context.resultDesc;
+  }
+
+  override toJSON(): Record<string, unknown> {
+    return { ...super.toJSON(), resultCode: this.resultCode, resultDesc: this.resultDesc };
   }
 }
 

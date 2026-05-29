@@ -237,6 +237,12 @@ Types are bundled — no `@types/daraja-js` needed. Inputs and Daraja callbacks 
 
 Webhook signatures use the Stripe-compatible scheme (`t=…,v1=…`, HMAC-SHA256 over raw body, constant-time compare, replay window). Report vulnerabilities per [SECURITY.md](./SECURITY.md) — **not** via public issues. We ship neither Safaricom certificate (they own those); `generateSecurityCredential()` works against your own.
 
+Three things you own when integrating:
+
+- **Verify the raw body.** Pass the exact request bytes to `webhooks.constructEvent(Async)` — not `JSON.stringify(req.body)`, which re-serializes and breaks the signature.
+- **Make callback handlers idempotent.** The SDK verifies signatures but keeps no replay cache; dedupe on the transaction/receipt id so a re-delivered (or replayed-within-window) callback isn't processed twice.
+- **Don't blindly log errors.** `DarajaError.raw` (the Daraja response, which may contain MSISDN/receipts) is non-enumerable, so `JSON.stringify`/`console.log`/most logger serializers skip it — but if you explicitly read `err.raw`, scrub PII before logging it.
+
 ## Telemetry
 
 Off by default. The SDK makes no network calls except to Safaricom.

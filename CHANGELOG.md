@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.0.0
+
+First stable release. The SDK covers **every Daraja endpoint** a production
+PayBill uses — STK Push, C2B, B2C, B2B + float transfers, balance, transaction
+status, reversal, dynamic QR, and Pull Transactions — plus the security-credential
+helper, Stripe-compatible webhook signing/verification, a pluggable cross-process
+token cache, and an auto-published API reference. 130 tests; passed an
+independent pre-1.0 security review.
+
+### Major Changes
+
+- **Stable public API.** The `Daraja` client surface and exports are now under
+  semver — breaking changes will bump the major version.
+
+### Patch Changes
+
+- Security hardening from the pre-1.0 review: `DarajaError.raw` is now
+  non-enumerable with a raw-free `toJSON()`, so Daraja response payloads (which
+  may contain customer PII) are not dumped into logs by `JSON.stringify` /
+  `console.log` / error serializers. `err.raw` remains accessible for explicit
+  debugging.
+
 ## 0.8.0
 
 ### Minor Changes
