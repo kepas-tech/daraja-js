@@ -227,7 +227,7 @@ This now covers **every Daraja endpoint** a production PayBill uses — collecti
 
 **On the [roadmap](./ROADMAP.md) (post-1.0):** Tax Remittance, B2C Topup, B2B Express Checkout, Ratiba (standing orders).
 
-Full surface in the [API reference](./docs) (published with each release).
+Full surface in the [API reference](https://nellylemmy.github.io/daraja-js/) (auto-published from each commit to `main`).
 
 ## TypeScript
 

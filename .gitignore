@@ -23,3 +23,6 @@ coverage/
 .idea/
 .vscode/
 *.log
+
+# generated API reference (built + deployed by CI)
+docs/api/
