@@ -4,8 +4,11 @@
  * @packageDocumentation
  */
 
-/** Package version, replaced at build time. */
-export const VERSION = '0.0.0';
+declare const __DARAJA_VERSION__: string;
+
+/** Package version, injected from package.json at build time. */
+export const VERSION: string =
+  typeof __DARAJA_VERSION__ === 'undefined' ? '0.0.0-dev' : __DARAJA_VERSION__;
 
 // Client
 export { Daraja, type DarajaConfig } from './client.js';

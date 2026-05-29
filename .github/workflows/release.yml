@@ -26,6 +26,8 @@ jobs:
           node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
+      - name: Upgrade npm for OIDC Trusted Publishing (needs >= 11.5.1)
+        run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - name: Create release PR or publish

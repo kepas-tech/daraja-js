@@ -1,8 +1,12 @@
 # Changelog
 
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
-project adheres to [SemVer](https://semver.org/spec/v2.0.0.html). Releases are
-managed with [Changesets](https://github.com/changesets/changesets).
+## 0.1.1
+
+### Patch Changes
+
+- Fix `VERSION` reporting `0.0.0` — it's now injected from package.json at build
+  time (was a stale literal). Add a gated live STK Push integration test
+  (`pnpm test:integration`, sandbox-only, skipped without creds).
 
 ## 0.1.0
 
