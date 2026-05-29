@@ -6,6 +6,7 @@
 import { TokenManager, type TokenResponse } from './auth.js';
 import { DarajaAuthError, DarajaValidationError } from './errors.js';
 import { HttpClient } from './http.js';
+import { type RegisterUrlsInput, type RegisterUrlsResult, registerUrls } from './resources/c2b.js';
 import { type StkPushInput, type StkPushResult, stkPush } from './resources/stk-push.js';
 
 export interface DarajaConfig {
@@ -40,6 +41,11 @@ export class Daraja {
     stkPush: (input: StkPushInput) => Promise<StkPushResult>;
   };
 
+  /** C2B — register callback URLs for direct PayBill/Till payments. */
+  readonly c2b: {
+    registerUrls: (input: RegisterUrlsInput) => Promise<RegisterUrlsResult>;
+  };
+
   constructor(config: DarajaConfig) {
     validateConfig(config);
     this.config = config;
@@ -57,6 +63,9 @@ export class Daraja {
 
     this.collect = {
       stkPush: (input) => stkPush(this.http, this.config, input),
+    };
+    this.c2b = {
+      registerUrls: (input) => registerUrls(this.http, this.config, input),
     };
   }
 }

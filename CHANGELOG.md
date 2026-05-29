@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0
+
+### Minor Changes
+
+- Add C2B support — capture payments customers make directly to your PayBill/Till.
+
+  - `daraja.c2b.registerUrls({ confirmationUrl, validationUrl, responseType? })` —
+    register validation + confirmation callback URLs (`/mpesa/c2b/v2/registerurl`).
+  - `parseC2bConfirmation` — parse the confirmation callback into a typed payment
+    with `amount` as a number and `terminal: true` (gotcha #8 — money is already
+    settled, no second callback, and Safaricom does not retry it).
+  - `parseC2bValidation` — parse the pre-payment validation callback.
+  - `c2bAccept()` / `c2bReject(reason?, code?)` — the response bodies Safaricom
+    expects to accept or reject a validation request.
+
 ## 0.1.1
 
 ### Patch Changes

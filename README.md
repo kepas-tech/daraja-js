@@ -80,6 +80,31 @@ app.post('/webhooks/mpesa/stk', express.json(), (req, res) => {
 });
 ```
 
+### C2B — direct PayBill/Till payments
+
+Register your callback URLs once, then handle the validation + confirmation
+callbacks. The confirmation is **terminal** — money is already settled and
+Safaricom won't retry it, so always reply 200.
+
+```ts
+import { parseC2bConfirmation, c2bAccept, c2bReject } from '@kepas/daraja-js';
+
+// one-time setup
+await daraja.c2b.registerUrls({
+  confirmationUrl: 'https://example.com/c2b/confirm',
+  validationUrl: 'https://example.com/c2b/validate',
+});
+
+// validation (optional): accept or reject before the payment completes
+app.post('/c2b/validate', express.json(), (req, res) => res.json(c2bAccept()));
+
+// confirmation: money is in — record it, always 200
+app.post('/c2b/confirm', express.json(), (req, res) => {
+  const p = parseC2bConfirmation(req.body); // p.transId, p.amount, p.msisdn, p.billRefNumber
+  res.status(200).end();
+});
+```
+
 ### Re-emitting signed webhooks (Stripe-compatible)
 
 For platforms built on daraja-js that forward events to their own consumers —
@@ -131,6 +156,7 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 
 - `collect.stkPush` — STK Push, with the gotcha-defeating validation layer.
 - `parseStkCallback` — parse the async STK result Safaricom posts back.
+- `c2b.registerUrls` + `parseC2bConfirmation` / `parseC2bValidation` + `c2bAccept` / `c2bReject` — capture direct PayBill/Till payments (confirmation is terminal — gotcha #8).
 - `webhooks.sign` / `constructEvent` / `constructEventAsync` — Stripe-compatible signing + verification (sync + edge).
 - The phone / amount / timestamp / password primitives (`normalizePhone`, `phoneToNumber`, `makeTimestamp`, `generatePassword`, `validateAmount`).
 - The `DarajaError` hierarchy + `errorFromResult` (ResultCode classification).
@@ -138,7 +164,7 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 
 **On the [roadmap](./ROADMAP.md) (committed APIs, not yet shipped):**
 
-`c2b.registerUrls` · `b2c.send` · `b2b.pay` / float transfers · `balance.query` · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate` · `generateSecurityCredential()`.
+`b2c.send` · `b2b.pay` / float transfers · `balance.query` · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate` · `generateSecurityCredential()`.
 
 Full surface in the [API reference](./docs) (published with each release).
 

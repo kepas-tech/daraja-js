@@ -26,6 +26,18 @@ export {
   DarajaValidationError,
   errorFromResult,
 } from './errors.js';
+// C2B — registration + callback parsing + validation responses
+export {
+  type C2bConfirmation,
+  type C2bPayment,
+  type C2bResponseType,
+  c2bAccept,
+  c2bReject,
+  parseC2bConfirmation,
+  parseC2bValidation,
+  type RegisterUrlsInput,
+  type RegisterUrlsResult,
+} from './resources/c2b.js';
 export {
   parseStkCallback,
   type StkCallbackResult,
