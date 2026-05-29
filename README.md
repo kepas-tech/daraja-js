@@ -3,7 +3,7 @@
 > Type-safe Node.js / TypeScript SDK for Safaricom Daraja (M-Pesa). It encodes the production gotchas that silently break real PayBills — so you don't rediscover them in your own outage.
 
 <!-- badges: npm, build, coverage, license, types — wired in CI step, placeholders until first release -->
-[![npm](https://img.shields.io/badge/npm-unpublished-lightgrey.svg)](https://www.npmjs.com/package/daraja-js)
+[![npm](https://img.shields.io/badge/npm-unpublished-lightgrey.svg)](https://www.npmjs.com/package/@kepas/daraja-js)
 [![CI](https://img.shields.io/badge/CI-pending-lightgrey.svg)](https://github.com/nellylemmy/daraja-js/actions)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 [![Types](https://img.shields.io/badge/types-included-blue.svg)](#typescript)
@@ -24,9 +24,9 @@ The Daraja API works. The problem is the dozen undocumented behaviors that pass 
 ## Install
 
 ```bash
-npm install daraja-js
+npm install @kepas/daraja-js
 # or
-pnpm add daraja-js
+pnpm add @kepas/daraja-js
 ```
 
 Node 20+. Ships ESM + CJS + types. Works in Node, Bun, and Cloudflare Workers (WebCrypto-backed webhook verification).
@@ -36,7 +36,7 @@ Node 20+. Ships ESM + CJS + types. Works in Node, Bun, and Cloudflare Workers (W
 ### ESM
 
 ```ts
-import { Daraja, DarajaInsufficientFundsError } from 'daraja-js';
+import { Daraja, DarajaInsufficientFundsError } from '@kepas/daraja-js';
 
 const daraja = new Daraja({
   consumerKey: process.env.MPESA_CONSUMER_KEY!,
@@ -61,7 +61,7 @@ console.log(res.checkoutRequestId);
 ### CJS
 
 ```js
-const { Daraja } = require('daraja-js');
+const { Daraja } = require('@kepas/daraja-js');
 ```
 
 ### Receiving the STK result (Daraja callback)
@@ -70,7 +70,7 @@ Safaricom POSTs the async result to your `callbackUrl`. Daraja does **not** sign
 it, so pair this with an IP allowlist for Safaricom's ranges.
 
 ```ts
-import { parseStkCallback } from 'daraja-js';
+import { parseStkCallback } from '@kepas/daraja-js';
 
 app.post('/webhooks/mpesa/stk', express.json(), (req, res) => {
   const result = parseStkCallback(req.body);
@@ -87,7 +87,7 @@ For platforms built on daraja-js that forward events to their own consumers —
 sign on send, verify on receive. Works on Node and edge runtimes.
 
 ```ts
-import { webhooks } from 'daraja-js';
+import { webhooks } from '@kepas/daraja-js';
 
 app.post('/webhooks/mpesa/stk',
   express.raw({ type: 'application/json' }),   // RAW bytes — not parsed JSON

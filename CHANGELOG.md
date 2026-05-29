@@ -1,5 +1,9 @@
 # Changelog
 
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this
+project adheres to [SemVer](https://semver.org/spec/v2.0.0.html). Releases are
+managed with [Changesets](https://github.com/changesets/changesets).
+
 ## 0.1.0
 
 ### Minor Changes
@@ -39,16 +43,5 @@
     variant uses WebCrypto for edge runtimes. For platforms re-emitting events.
   - New `DarajaSignatureError`.
 
-All notable changes to this project are documented here. The format follows
-[Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.0/), and the project
-adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-Releases are managed with [Changesets](https://github.com/changesets/changesets);
-entries below v1.0.0 are generated from changeset files.
-
-## [Unreleased]
-
-### Added
-
-- Initial repository scaffold: README, Apache 2.0 license, governance, security
-  policy, CI/CD, and tooling.
+  First public release, published as `@kepas/daraja-js`: STK Push end-to-end
+  (send, receive, verify) plus the validation/error/auth/HTTP core.
