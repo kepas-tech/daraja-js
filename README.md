@@ -219,7 +219,7 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 - `balance.query` + `parseBalanceResult` / `parseAccountBalance` — query account balances, with the pipe-delimited parser (gotcha #6).
 - `webhooks.sign` / `constructEvent` / `constructEventAsync` — Stripe-compatible signing + verification (sync + edge).
 - The phone / amount / timestamp / password primitives (`normalizePhone`, `phoneToNumber`, `makeTimestamp`, `generatePassword`, `validateAmount`).
-- The `DarajaError` hierarchy + `errorFromResult` (ResultCode classification).
+- The `DarajaError` hierarchy + `errorFromResult` + a **proven result-code catalog** that turns Safaricom's codes into actionable messages — see [ERROR_CODES.md](./docs/ERROR_CODES.md).
 - OAuth token management (race-safe, 3599s TTL) and the HTTP transport.
 - Pluggable cross-process token cache (`tokenStore`) — share one OAuth token across workers (e.g. Redis), no SDK Redis dependency.
 
@@ -232,6 +232,23 @@ Full surface in the [API reference](https://nellylemmy.github.io/daraja-js/) (au
 ## TypeScript
 
 Types are bundled — no `@types/daraja-js` needed. Inputs and Daraja callbacks are fully typed; the error hierarchy (`DarajaError` → `DarajaAuthError`, `DarajaInsufficientFundsError`, …) lets you branch on recoverable vs fatal.
+
+## Meaningful errors (proven, not guessed)
+
+Safaricom returns terse codes (`1037`, `SFC_IC0003`, …) and **publishes no complete code reference**. daraja-js ships a catalog where every meaning is **proven** — observed in real production responses, our own code, or official docs — never from community guesswork. Parsed results carry the extras:
+
+```ts
+const r = parseStkCallback(req.body);
+if (!r.success) {
+  console.log(r.resultCode);  // 1037
+  console.log(r.resultDesc);  // Safaricom's verbatim text (never altered)
+  console.log(r.meaning);     // "The customer didn't respond to the STK prompt within ~60s…"
+  console.log(r.retriable);   // true
+  console.log(r.catalogued);  // true — false means we pass Safaricom's text through, no guess
+}
+```
+
+A code we can't prove is passed through **verbatim** (`catalogued: false`) — we never fabricate a meaning. Full table + proof sources: [docs/ERROR_CODES.md](./docs/ERROR_CODES.md).
 
 ## Security
 

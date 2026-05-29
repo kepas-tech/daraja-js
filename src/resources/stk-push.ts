@@ -8,8 +8,9 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaAPIError, DarajaValidationError } from '../errors.js';
+import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 import { validateAmount } from '../validation/amount.js';
 import { generatePassword } from '../validation/password.js';
 import { phoneToNumber } from '../validation/phone.js';
@@ -76,7 +77,12 @@ export async function stkPush(
   const raw = await http.post<StkPushRaw>(ENDPOINT, payload);
 
   if (raw.ResponseCode !== '0') {
-    throw new DarajaAPIError(raw.ResponseDescription ?? 'STK Push was not accepted', { raw });
+    throw errorFromResponse({
+      scope: 'stk',
+      responseCode: raw.ResponseCode,
+      errorMessage: raw.ResponseDescription,
+      raw,
+    });
   }
 
   return {
@@ -89,7 +95,7 @@ export async function stkPush(
 }
 
 /** The async STK Push result Safaricom posts to your callback URL. */
-export interface StkCallbackResult {
+export interface StkCallbackResult extends CodeClassificationFields {
   merchantRequestId: string;
   checkoutRequestId: string;
   resultCode: number;
@@ -143,5 +149,5 @@ export function parseStkCallback(body: unknown): StkCallbackResult {
     result.transactionDate = value('TransactionDate') as number | undefined;
   }
 
-  return result;
+  return applyClassification(result, 'stk', result.resultCode, result.resultDesc);
 }

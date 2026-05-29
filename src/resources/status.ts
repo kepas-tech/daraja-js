@@ -8,8 +8,9 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaAPIError, DarajaValidationError } from '../errors.js';
+import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 import { generatePassword } from '../validation/password.js';
 import { makeTimestamp } from '../validation/timestamp.js';
 
@@ -64,7 +65,7 @@ interface AckRaw {
   ResponseDescription?: string;
 }
 
-export interface StatusResult {
+export interface StatusResult extends CodeClassificationFields {
   resultCode: number;
   resultDesc: string;
   conversationId: string;
@@ -133,7 +134,12 @@ export async function transaction(
     ResultURL: input.resultUrl,
   });
   if (raw.ResponseCode !== '0') {
-    throw new DarajaAPIError(raw.ResponseDescription ?? 'Status query was not accepted', { raw });
+    throw errorFromResponse({
+      scope: 'status',
+      responseCode: raw.ResponseCode,
+      errorMessage: raw.ResponseDescription,
+      raw,
+    });
   }
   return {
     conversationId: raw.ConversationID ?? '',
@@ -154,7 +160,7 @@ export function parseStatusResult(body: unknown): StatusResult {
   for (const it of result.ResultParameters?.ResultParameter ?? []) {
     params[it.Key] = it.Value;
   }
-  return {
+  const out: StatusResult = {
     resultCode: result.ResultCode,
     resultDesc: result.ResultDesc ?? '',
     conversationId: result.ConversationID ?? '',
@@ -163,4 +169,5 @@ export function parseStatusResult(body: unknown): StatusResult {
     success: result.ResultCode === 0,
     params,
   };
+  return applyClassification(out, 'status', out.resultCode, out.resultDesc);
 }

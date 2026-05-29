@@ -31,6 +31,7 @@ export {
   DarajaSignatureError,
   DarajaUserUnreachableError,
   DarajaValidationError,
+  errorFromResponse,
   errorFromResult,
 } from './errors.js';
 // B2B — pay another business + float transfers
@@ -103,6 +104,20 @@ export {
   type StkPushInput,
   type StkPushResult,
 } from './resources/stk-push.js';
+// Proven result-code catalog (meaningful messages)
+export {
+  applyClassification,
+  CATALOG,
+  type CatalogEntry,
+  type Classification,
+  type CodeClassificationFields,
+  type CodeType,
+  classify,
+  type DarajaErrorClassName,
+  type DarajaScope,
+  lookup,
+  type ProofRef,
+} from './result-codes.js';
 export { validateAmount } from './validation/amount.js';
 export { generatePassword } from './validation/password.js';
 // Validation + request primitives (the gotcha-defeating layer)

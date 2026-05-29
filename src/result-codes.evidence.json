@@ -1,0 +1,44 @@
+{
+  "_comment": "Proof record for the result-code catalog. Each code below was OBSERVED in real Safaricom responses in kepas-pay production (the `desc` is Safaricom's own verbatim text). This is the evidence behind the `kepas-db` proof tags in result-codes.ts. Deliberately carries NO production volumes, table/schema names, dates, or identifiers — only (scope, code, Safaricom's description). Community/blog sources are excluded by policy.",
+  "source": "observed in kepas-pay production responses",
+  "observations": [
+    { "scope": "stk", "code": "0", "desc": "The service request is processed successfully." },
+    { "scope": "stk", "code": "1037", "desc": "DS timeout user cannot be reached." },
+    { "scope": "stk", "code": "1032", "desc": "Request Cancelled by user." },
+
+    { "scope": "b2c", "code": "0", "desc": "The service request is processed successfully." },
+    { "scope": "b2c", "code": "1", "desc": "The balance is insufficient for the transaction." },
+    {
+      "scope": "b2c",
+      "code": "2",
+      "desc": "Declined due to limit rule: less than the minimum transaction amount."
+    },
+
+    { "scope": "b2b", "code": "0", "desc": "The service request is processed successfully." },
+    { "scope": "b2b", "code": "1", "desc": "The balance is insufficient for the transaction." },
+    {
+      "scope": "b2b",
+      "code": "21",
+      "desc": "The initiator is not allowed to initiate this request."
+    },
+    { "scope": "b2b", "code": "SFC_IC0003", "desc": "Receiver party is invalid" },
+
+    { "scope": "balance", "code": "0", "desc": "The service request is processed successfully." },
+
+    { "scope": "status", "code": "0", "desc": "The service request is processed successfully." },
+    { "scope": "status", "code": "25", "desc": "The format of parameter null is invalid." },
+
+    { "scope": "reversal", "code": "0", "desc": "The service request is processed successfully." },
+
+    {
+      "scope": "c2b",
+      "code": "confirmation",
+      "desc": "C2B confirmation is terminal (TransactionType 'Pay Bill'); no ResultCode field present."
+    }
+  ],
+  "notProven": {
+    "_comment": "NOT observed in our production data and NOT in our code — therefore NOT asserted by the SDK; passed through verbatim. Official Safaricom docs do not publish a comprehensive code reference; community blogs are excluded.",
+    "syncDottedErrorCodes": "No dotted HTTP errorCodes (e.g. 500.001.1001, 400.002.02) appeared in any logged response — never asserted.",
+    "stkUnobserved": ["17", "26", "1001", "1019", "1025", "2001", "9999"]
+  }
+}

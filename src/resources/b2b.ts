@@ -12,8 +12,9 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaAPIError, DarajaValidationError } from '../errors.js';
+import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 import { validateAmount } from '../validation/amount.js';
 
 type B2bConfig = Pick<DarajaConfig, 'shortcode' | 'initiator' | 'securityCredential'>;
@@ -67,7 +68,12 @@ function requireInitiator(config: B2bConfig): { initiator: string; securityCrede
 async function post(http: HttpClient, body: Record<string, unknown>): Promise<B2bAck> {
   const raw = await http.post<AckRaw>(ENDPOINT, body);
   if (raw.ResponseCode !== '0') {
-    throw new DarajaAPIError(raw.ResponseDescription ?? 'B2B request was not accepted', { raw });
+    throw errorFromResponse({
+      scope: 'b2b',
+      responseCode: raw.ResponseCode,
+      errorMessage: raw.ResponseDescription,
+      raw,
+    });
   }
   return {
     conversationId: raw.ConversationID ?? '',
@@ -132,7 +138,7 @@ export async function transferFloat(
   });
 }
 
-export interface B2bResult {
+export interface B2bResult extends CodeClassificationFields {
   resultCode: number;
   resultDesc: string;
   conversationId: string;
@@ -164,7 +170,7 @@ export function parseB2bResult(body: unknown): B2bResult {
   for (const it of result.ResultParameters?.ResultParameter ?? []) {
     params[it.Key] = it.Value;
   }
-  return {
+  const out: B2bResult = {
     resultCode: result.ResultCode,
     resultDesc: result.ResultDesc ?? '',
     conversationId: result.ConversationID ?? '',
@@ -173,4 +179,5 @@ export function parseB2bResult(body: unknown): B2bResult {
     success: result.ResultCode === 0,
     params,
   };
+  return applyClassification(out, 'b2b', out.resultCode, out.resultDesc);
 }

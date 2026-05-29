@@ -9,8 +9,9 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaAPIError, DarajaValidationError } from '../errors.js';
+import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 import { validateAmount } from '../validation/amount.js';
 import { phoneToNumber } from '../validation/phone.js';
 
@@ -72,7 +73,12 @@ export async function send(
   });
 
   if (raw.ResponseCode !== '0') {
-    throw new DarajaAPIError(raw.ResponseDescription ?? 'B2C request was not accepted', { raw });
+    throw errorFromResponse({
+      scope: 'b2c',
+      responseCode: raw.ResponseCode,
+      errorMessage: raw.ResponseDescription,
+      raw,
+    });
   }
 
   return {
@@ -83,7 +89,7 @@ export async function send(
   };
 }
 
-export interface B2cResult {
+export interface B2cResult extends CodeClassificationFields {
   resultCode: number;
   resultDesc: string;
   conversationId: string;
@@ -145,5 +151,5 @@ export function parseB2cResult(body: unknown): B2cResult {
   if (p.B2CWorkingAccountAvailableFunds != null) {
     out.workingAccountFunds = Number(p.B2CWorkingAccountAvailableFunds);
   }
-  return out;
+  return applyClassification(out, 'b2c', out.resultCode, out.resultDesc);
 }

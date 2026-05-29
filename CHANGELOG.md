@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.1.0
+
+### Minor Changes
+
+- Add a proven Daraja result-code catalog and meaningful, actionable error messages.
+
+  Every code's meaning is grounded in evidence — real Safaricom responses observed
+  in production (the meaning IS Safaricom's own ResultDesc text), this SDK's code,
+  kepas-pay's production handlers, or official docs. Community blogs are not a
+  source, and codes we cannot prove are passed through VERBATIM (never fabricated).
+
+  - New `result-codes` module: `CATALOG`, `lookup`, `classify`, `applyClassification`
+    (per-API scoped — the same numeric code can differ by endpoint).
+  - Async parsers (`parseStkCallback`, `parseB2cResult`, `parseStatusResult`,
+    `parseReversalResult`, `parseBalanceResult`, `parseB2bResult`) now carry optional
+    additive `meaning` / `retriable` / `terminal` / `catalogued` fields. `resultCode`/
+    `resultDesc`/`success`/`raw` are unchanged. `parseReversalResult` adds
+    `settledByRecipientSpend`.
+  - `errorFromResult` is catalog-backed (default scope `stk` for back-compat); new
+    `errorFromResponse` enriches synchronous rejections. No new error classes.
+  - New `docs/ERROR_CODES.md` (generated) lists every catalogued code, its meaning,
+    retriable/terminal, mapped SDK error, and proof source.
+
+  Fully backward-compatible: additive fields/exports only.
+
 ## 1.0.0
 
 First stable release. The SDK covers **every Daraja endpoint** a production

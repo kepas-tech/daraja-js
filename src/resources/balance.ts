@@ -8,8 +8,9 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaAPIError, DarajaValidationError } from '../errors.js';
+import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 
 type BalanceConfig = Pick<DarajaConfig, 'shortcode' | 'initiator' | 'securityCredential'>;
 
@@ -35,7 +36,7 @@ export interface AccountBalanceEntry {
   uncleared: number;
 }
 
-export interface BalanceResult {
+export interface BalanceResult extends CodeClassificationFields {
   resultCode: number;
   resultDesc: string;
   conversationId: string;
@@ -84,7 +85,12 @@ export async function query(
     ResultURL: input.resultUrl,
   });
   if (raw.ResponseCode !== '0') {
-    throw new DarajaAPIError(raw.ResponseDescription ?? 'Balance query was not accepted', { raw });
+    throw errorFromResponse({
+      scope: 'balance',
+      responseCode: raw.ResponseCode,
+      errorMessage: raw.ResponseDescription,
+      raw,
+    });
   }
   return {
     conversationId: raw.ConversationID ?? '',
@@ -129,7 +135,7 @@ export function parseBalanceResult(body: unknown): BalanceResult {
   }
   const items = result.ResultParameters?.ResultParameter ?? [];
   const rawBalance = items.find((i) => i.Key === 'AccountBalance')?.Value;
-  return {
+  const out: BalanceResult = {
     resultCode: result.ResultCode,
     resultDesc: result.ResultDesc ?? '',
     conversationId: result.ConversationID ?? '',
@@ -137,4 +143,5 @@ export function parseBalanceResult(body: unknown): BalanceResult {
     success: result.ResultCode === 0,
     balances: parseAccountBalance(typeof rawBalance === 'string' ? rawBalance : ''),
   };
+  return applyClassification(out, 'balance', out.resultCode, out.resultDesc);
 }

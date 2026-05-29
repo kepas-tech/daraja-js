@@ -4,6 +4,8 @@
  * user unreachable) vs fatal (auth) conditions.
  */
 
+import { type DarajaScope, lookup } from './result-codes.js';
+
 export interface DarajaErrorContext {
   /** Daraja `ResultCode` for an async/transaction failure. */
   resultCode?: number | undefined;
@@ -11,6 +13,8 @@ export interface DarajaErrorContext {
   resultDesc?: string | undefined;
   /** Daraja request/conversation id, for support correlation. */
   requestId?: string | undefined;
+  /** Which API produced this — selects the proven per-scope catalog entry. */
+  scope?: DarajaScope | undefined;
   /** Raw response payload, for debugging. */
   raw?: unknown;
 }
@@ -83,20 +87,50 @@ export class DarajaUserUnreachableError extends DarajaAPIError {}
 /** ResultCode 1032 — payer cancelled the STK prompt. */
 export class DarajaCancelledError extends DarajaAPIError {}
 
-const RESULT_CODE_MAP: Record<number, new (m: string, c?: DarajaErrorContext) => DarajaAPIError> = {
-  1: DarajaInsufficientFundsError,
-  1032: DarajaCancelledError,
-  1037: DarajaUserUnreachableError,
+const CLASS_BY_NAME: Record<string, new (m: string, c?: DarajaErrorContext) => DarajaAPIError> = {
+  DarajaAPIError,
+  DarajaInsufficientFundsError,
+  DarajaCancelledError,
+  DarajaUserUnreachableError,
 };
 
 /**
- * Build the most specific error for a Daraja result. Unmapped codes fall back
- * to a generic `DarajaAPIError` carrying the verbatim `ResultDesc`.
+ * Build the most specific error for a Daraja async result, enriched from the
+ * proven code catalog. The thrown `message` is the catalog's authored,
+ * actionable text WHEN the code is proven for this scope; otherwise it is
+ * Safaricom's verbatim `resultDesc`. `resultCode`/`resultDesc`/`raw` are never
+ * altered. `scope` defaults to `'stk'` for backward compatibility.
  */
 export function errorFromResult(context: DarajaErrorContext): DarajaAPIError {
-  const Ctor =
-    (context.resultCode != null && RESULT_CODE_MAP[context.resultCode]) || DarajaAPIError;
+  const scope = context.scope ?? 'stk';
+  const entry =
+    context.resultCode != null ? lookup(scope, 'resultCode', context.resultCode) : undefined;
+  const Ctor = (entry?.errorClass && CLASS_BY_NAME[entry.errorClass]) || DarajaAPIError;
   const message =
-    context.resultDesc ?? `Daraja error (ResultCode ${context.resultCode ?? 'unknown'})`;
+    entry?.authoredMessage ??
+    context.resultDesc ??
+    `Daraja error (ResultCode ${context.resultCode ?? 'unknown'})`;
   return new Ctor(message, context);
+}
+
+/**
+ * Build an error for a SYNCHRONOUS rejection (a non-success `ResponseCode` /
+ * dotted `errorCode`). Enriches the message from the catalog when the code is
+ * proven for this scope; otherwise uses Safaricom's `errorMessage` verbatim.
+ */
+export function errorFromResponse(context: {
+  scope: DarajaScope;
+  responseCode?: string | undefined;
+  errorCode?: string | undefined;
+  errorMessage?: string | undefined;
+  requestId?: string | undefined;
+  raw?: unknown;
+}): DarajaAPIError {
+  const codeValue = context.errorCode ?? context.responseCode;
+  const entry = codeValue != null ? lookup(context.scope, 'responseCode', codeValue) : undefined;
+  const message =
+    entry?.authoredMessage ??
+    context.errorMessage ??
+    `${context.scope.toUpperCase()} request was not accepted`;
+  return new DarajaAPIError(message, { requestId: context.requestId, raw: context.raw });
 }

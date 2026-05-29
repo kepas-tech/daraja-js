@@ -9,7 +9,7 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaAPIError } from '../errors.js';
+import { errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
 import { normalizePhone } from '../validation/phone.js';
 
@@ -57,7 +57,9 @@ export async function registerUrl(
   const status = String(raw['Response Status'] ?? '');
   // 1000 = first registration, 1001 = already registered — both are success.
   if (status !== '1000' && status !== '1001') {
-    throw new DarajaAPIError(`Pull registration was not accepted (status ${status || 'unknown'})`, {
+    throw errorFromResponse({
+      scope: 'pull',
+      errorMessage: `Pull registration was not accepted (status ${status || 'unknown'})`,
       raw,
     });
   }

@@ -7,7 +7,7 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaAPIError } from '../errors.js';
+import { errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
 
 type QrConfig = Pick<DarajaConfig, 'shortcode'>;
@@ -56,7 +56,12 @@ export async function generate(
     Size: String(input.size ?? 300),
   });
   if (raw.ResponseCode !== '00') {
-    throw new DarajaAPIError(raw.ResponseDescription ?? 'QR generation was not accepted', { raw });
+    throw errorFromResponse({
+      scope: 'qr',
+      responseCode: raw.ResponseCode,
+      errorMessage: raw.ResponseDescription,
+      raw,
+    });
   }
   return {
     responseCode: raw.ResponseCode,

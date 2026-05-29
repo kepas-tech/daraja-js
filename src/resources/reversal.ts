@@ -9,8 +9,9 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaAPIError, DarajaValidationError } from '../errors.js';
+import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 import { validateAmount } from '../validation/amount.js';
 
 type ReversalConfig = Pick<DarajaConfig, 'shortcode' | 'initiator' | 'securityCredential'>;
@@ -38,7 +39,7 @@ interface AckRaw {
   ResponseDescription?: string;
 }
 
-export interface ReversalResult {
+export interface ReversalResult extends CodeClassificationFields {
   resultCode: number;
   resultDesc: string;
   conversationId: string;
@@ -46,6 +47,12 @@ export interface ReversalResult {
   transactionId: string;
   success: boolean;
   params: Record<string, unknown>;
+  /**
+   * True when a failure's `resultDesc` indicates the recipient already spent the
+   * funds (no stable code — keyword heuristic). When set, the reversal won't
+   * succeed; treat the original as settled.
+   */
+  settledByRecipientSpend?: boolean | undefined;
 }
 
 interface ResultEnvelope {
@@ -85,7 +92,12 @@ export async function request(
     ResultURL: input.resultUrl,
   });
   if (raw.ResponseCode !== '0') {
-    throw new DarajaAPIError(raw.ResponseDescription ?? 'Reversal was not accepted', { raw });
+    throw errorFromResponse({
+      scope: 'reversal',
+      responseCode: raw.ResponseCode,
+      errorMessage: raw.ResponseDescription,
+      raw,
+    });
   }
   return {
     conversationId: raw.ConversationID ?? '',
@@ -106,7 +118,7 @@ export function parseReversalResult(body: unknown): ReversalResult {
   for (const it of result.ResultParameters?.ResultParameter ?? []) {
     params[it.Key] = it.Value;
   }
-  return {
+  const out: ReversalResult = {
     resultCode: result.ResultCode,
     resultDesc: result.ResultDesc ?? '',
     conversationId: result.ConversationID ?? '',
@@ -115,6 +127,14 @@ export function parseReversalResult(body: unknown): ReversalResult {
     success: result.ResultCode === 0,
     params,
   };
+  applyClassification(out, 'reversal', out.resultCode, out.resultDesc);
+  // No stable code for "recipient already spent" — keyword heuristic on resultDesc.
+  if (!out.success && isSettledByRecipientSpend(out.resultDesc)) {
+    out.settledByRecipientSpend = true;
+    out.meaning =
+      'Reversal not possible — the recipient appears to have already spent the funds; treat the original transaction as settled.';
+  }
+  return out;
 }
 
 /**
