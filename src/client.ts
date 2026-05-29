@@ -3,7 +3,7 @@
  * token manager and HTTP transport, and exposes the resource namespaces.
  */
 
-import { TokenManager, type TokenResponse } from './auth.js';
+import { TokenManager, type TokenResponse, type TokenStore } from './auth.js';
 import { DarajaAuthError, DarajaValidationError } from './errors.js';
 import { HttpClient } from './http.js';
 import {
@@ -64,6 +64,8 @@ export interface DarajaConfig {
   securityCredential?: string;
   /** Retries on 5xx. Default 2. */
   maxNetworkRetries?: number;
+  /** Cross-process OAuth token cache (e.g. Redis). Defaults to per-process. */
+  tokenStore?: TokenStore;
   /** `fetch` override, for tests or custom runtimes. */
   fetchImpl?: typeof fetch;
 }
@@ -134,6 +136,8 @@ export class Daraja {
     const baseUrl = BASE_URLS[config.environment];
     const tokens = new TokenManager({
       fetchToken: () => fetchOAuthToken(baseUrl, config),
+      store: config.tokenStore,
+      cacheKey: `daraja-token:${config.environment}:${config.consumerKey}`,
     });
     this.http = new HttpClient({
       baseUrl,

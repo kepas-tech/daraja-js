@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.8.0
+
+### Minor Changes
+
+- Add a pluggable cross-process OAuth token cache (`tokenStore`).
+
+  Pass `tokenStore` on the client config to share one token across workers (e.g.
+  Redis) instead of one-per-process. It's a minimal two-method contract
+  (`get`/`set`) over any backend — the SDK keeps zero Redis dependency. The
+  in-memory fast path is preserved (the store is read only on a cold local token),
+  and keys are namespaced per environment + consumer key (gotcha #12). This is the
+  prerequisite for running kepas-pay 100% on the SDK at multi-worker scale.
+
 ## 0.7.0
 
 ### Minor Changes

@@ -10,6 +10,8 @@ declare const __DARAJA_VERSION__: string;
 export const VERSION: string =
   typeof __DARAJA_VERSION__ === 'undefined' ? '0.0.0-dev' : __DARAJA_VERSION__;
 
+// Cross-process token cache
+export type { TokenStore } from './auth.js';
 // Client
 export { Daraja, type DarajaConfig } from './client.js';
 // SecurityCredential generation (initiator-authed APIs)

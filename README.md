@@ -63,6 +63,28 @@ console.log(res.checkoutRequestId);
 const { Daraja } = require('@kepas/daraja-js');
 ```
 
+### Sharing the OAuth token across workers (Redis)
+
+By default the token is cached per-process. To share one token across many
+workers, pass a `tokenStore` — two functions over any backend (the SDK has no
+Redis dependency):
+
+```ts
+import Redis from 'ioredis';
+const redis = new Redis();
+
+const daraja = new Daraja({
+  /* …creds… */
+  tokenStore: {
+    get: (key) => redis.get(key),
+    set: (key, value, ttlSeconds) => redis.set(key, value, 'EX', ttlSeconds).then(() => undefined),
+  },
+});
+```
+
+The in-memory fast path still applies — Redis is only read when the local token
+is cold. Keys are namespaced per environment + consumer key.
+
 ### Receiving the STK result (Daraja callback)
 
 Safaricom POSTs the async result to your `callbackUrl`. Daraja does **not** sign
@@ -199,10 +221,11 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 - The phone / amount / timestamp / password primitives (`normalizePhone`, `phoneToNumber`, `makeTimestamp`, `generatePassword`, `validateAmount`).
 - The `DarajaError` hierarchy + `errorFromResult` (ResultCode classification).
 - OAuth token management (race-safe, 3599s TTL) and the HTTP transport.
+- Pluggable cross-process token cache (`tokenStore`) — share one OAuth token across workers (e.g. Redis), no SDK Redis dependency.
 
 This now covers **every Daraja endpoint** a production PayBill uses — collection, disbursement, account management, reconciliation, and QR.
 
-**On the [roadmap](./ROADMAP.md) (post-1.0):** Tax Remittance, B2C Topup, B2B Express Checkout, Ratiba (standing orders), and a pluggable Redis token cache.
+**On the [roadmap](./ROADMAP.md) (post-1.0):** Tax Remittance, B2C Topup, B2B Express Checkout, Ratiba (standing orders).
 
 Full surface in the [API reference](./docs) (published with each release).
 
