@@ -1,0 +1,10 @@
+# Normalize line endings to LF everywhere
+* text=auto eol=lf
+
+# Lockfiles: treat as binary for diffs (noise reduction), still merge-tracked
+pnpm-lock.yaml -diff
+package-lock.json -diff
+
+# Generated / vendored
+*.snap linguist-generated=true
+dist/** linguist-generated=true

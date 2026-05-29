@@ -1,0 +1,80 @@
+{
+  "name": "daraja-js",
+  "version": "0.0.0",
+  "description": "Type-safe Node.js/TypeScript SDK for Safaricom Daraja (M-Pesa). Encodes the production gotchas that silently break real PayBills.",
+  "keywords": [
+    "mpesa",
+    "m-pesa",
+    "daraja",
+    "safaricom",
+    "stk-push",
+    "b2c",
+    "c2b",
+    "payments",
+    "kenya"
+  ],
+  "license": "Apache-2.0",
+  "author": "KEPAS Technologies Ltd",
+  "homepage": "https://github.com/nellylemmy/daraja-js#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nellylemmy/daraja-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nellylemmy/daraja-js/issues"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run --dir tests/integration",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "docs": "typedoc",
+    "changeset": "changeset",
+    "release": "changeset publish",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "valibot": "^0.42.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.27.9",
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "fast-check": "^3.22.0",
+    "msw": "^2.4.11",
+    "tsup": "^8.3.0",
+    "typedoc": "^0.26.10",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

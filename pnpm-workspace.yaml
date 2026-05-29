@@ -1,0 +1,4 @@
+# Single-package today; declared so future packages (e.g. adapters) slot in
+# without restructuring.
+packages:
+  - '.'

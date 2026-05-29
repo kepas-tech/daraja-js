@@ -1,0 +1,37 @@
+name: RFC (design proposal)
+description: Propose a change with real tradeoffs — public API, a dependency, or security posture.
+labels: ["kind/refactor", "status/needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        RFCs exist so we agree on shape **before** code is written. Accepted RFCs that are architectural become an ADR under `docs/adr/`.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One paragraph. What are you proposing?
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why now? What breaks or stays painful without this?
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Detailed design
+      description: API surface, types, behavior. Be concrete.
+      render: ts
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Drawbacks & alternatives
+      description: Bundle size, breaking changes, edge-runtime impact, maintenance cost.
+    validations:
+      required: true

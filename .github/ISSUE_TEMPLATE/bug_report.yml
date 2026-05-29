@@ -1,0 +1,52 @@
+name: Bug report
+description: Something the SDK does wrong, with a reproduction.
+labels: ["kind/bug", "status/needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Do not paste real credentials, certificates, or live shortcodes.** Scrub MSISDNs and amounts.
+  - type: input
+    id: version
+    attributes:
+      label: daraja-js version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Daraja environment
+      options:
+        - sandbox
+        - production
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime
+      placeholder: "Node 22.11 / Bun 1.1 / Cloudflare Workers"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Include the ResultCode/ResultDesc if Daraja returned one.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Code snippet or steps. Credentials scrubbed.
+      render: ts
+    validations:
+      required: true

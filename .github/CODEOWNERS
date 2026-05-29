@@ -1,0 +1,8 @@
+# Default owner for everything in the repo.
+* @nellylemmy
+
+# Security-sensitive areas always require maintainer review.
+/src/auth.ts        @nellylemmy
+/src/webhooks.ts    @nellylemmy
+/src/crypto/        @nellylemmy
+/.github/workflows/ @nellylemmy
