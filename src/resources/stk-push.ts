@@ -1,0 +1,89 @@
+/**
+ * STK Push (Lipa na M-Pesa Online) — prompt a customer to authorize a payment
+ * on their phone.
+ *
+ * Composes the validation primitives so the caller can't trip the gotchas:
+ * `PartyA`/`PhoneNumber` go out as JSON numbers (#1), the timestamp is UTC (#3),
+ * and the password is derived in the right order (#4).
+ */
+
+import type { DarajaConfig } from '../client.js';
+import { DarajaAPIError } from '../errors.js';
+import type { HttpClient } from '../http.js';
+import { validateAmount } from '../validation/amount.js';
+import { generatePassword } from '../validation/password.js';
+import { phoneToNumber } from '../validation/phone.js';
+import { makeTimestamp } from '../validation/timestamp.js';
+
+export interface StkPushInput {
+  /** Payer phone in any accepted format. */
+  phone: string;
+  /** Whole KES. */
+  amount: number;
+  /** Shown on the payer's statement; your invoice/order id. */
+  accountReference: string;
+  /** Short description of the charge. */
+  description: string;
+  /** HTTPS URL Safaricom posts the async result to. */
+  callbackUrl: string;
+}
+
+export interface StkPushResult {
+  merchantRequestId: string;
+  checkoutRequestId: string;
+  responseCode: string;
+  responseDescription: string;
+  customerMessage: string;
+}
+
+interface StkPushRaw {
+  MerchantRequestID?: string;
+  CheckoutRequestID?: string;
+  ResponseCode?: string;
+  ResponseDescription?: string;
+  CustomerMessage?: string;
+}
+
+type StkConfig = Pick<DarajaConfig, 'shortcode' | 'passkey' | 'transactionType'>;
+
+const ENDPOINT = '/mpesa/stkpush/v1/processrequest';
+
+export async function stkPush(
+  http: HttpClient,
+  config: StkConfig,
+  input: StkPushInput,
+): Promise<StkPushResult> {
+  // Validation throws DarajaValidationError before any network call.
+  const partyA = phoneToNumber(input.phone);
+  const amount = validateAmount(input.amount);
+  const timestamp = makeTimestamp();
+  const password = generatePassword(config.shortcode, config.passkey, timestamp);
+
+  const payload = {
+    BusinessShortCode: config.shortcode,
+    Password: password,
+    Timestamp: timestamp,
+    TransactionType: config.transactionType ?? 'CustomerPayBillOnline',
+    Amount: amount,
+    PartyA: partyA, // JS number — gotcha #1
+    PartyB: config.shortcode,
+    PhoneNumber: partyA, // JS number — gotcha #1
+    CallBackURL: input.callbackUrl,
+    AccountReference: input.accountReference,
+    TransactionDesc: input.description,
+  };
+
+  const raw = await http.post<StkPushRaw>(ENDPOINT, payload);
+
+  if (raw.ResponseCode !== '0') {
+    throw new DarajaAPIError(raw.ResponseDescription ?? 'STK Push was not accepted', { raw });
+  }
+
+  return {
+    merchantRequestId: raw.MerchantRequestID ?? '',
+    checkoutRequestId: raw.CheckoutRequestID ?? '',
+    responseCode: raw.ResponseCode,
+    responseDescription: raw.ResponseDescription ?? '',
+    customerMessage: raw.CustomerMessage ?? '',
+  };
+}

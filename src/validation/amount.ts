@@ -5,6 +5,8 @@
  * expect a positive integer amount.
  */
 
+import { DarajaValidationError } from '../errors.js';
+
 /**
  * Validate a transaction amount and return it unchanged.
  *
@@ -12,13 +14,13 @@
  */
 export function validateAmount(amount: number): number {
   if (typeof amount !== 'number' || !Number.isFinite(amount)) {
-    throw new Error('amount must be a finite number');
+    throw new DarajaValidationError('amount must be a finite number');
   }
   if (!Number.isInteger(amount)) {
-    throw new Error('amount must be a whole number of KES (no cents)');
+    throw new DarajaValidationError('amount must be a whole number of KES (no cents)');
   }
   if (amount < 1) {
-    throw new Error('amount must be at least 1 KES');
+    throw new DarajaValidationError('amount must be at least 1 KES');
   }
   return amount;
 }

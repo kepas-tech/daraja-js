@@ -7,6 +7,10 @@
 /** Package version, replaced at build time. */
 export const VERSION = '0.0.0';
 
+// Client
+export { Daraja, type DarajaConfig } from './client.js';
+export type { StkPushInput, StkPushResult } from './resources/stk-push.js';
+
 // Error hierarchy
 export {
   DarajaError,

@@ -64,7 +64,11 @@ console.log(res.checkoutRequestId);
 const { Daraja } = require('daraja-js');
 ```
 
-### Webhook receiver (Express)
+### Webhook receiver (Express) — *planned, not yet released*
+
+> The webhook verifier lands in an upcoming release. The shape below is the
+> committed API, shown so you can plan around it. Until then, verify per the
+> Stripe-compatible scheme documented in [SECURITY.md](./SECURITY.md).
 
 ```ts
 import { webhooks } from 'daraja-js';
@@ -108,7 +112,16 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 
 ## What's covered
 
-`collect.stkPush` · `c2b.registerUrls` · `b2c.send` · `b2b.pay` / float transfers · `balance.query` · `transaction.status` · `reversal.request` · `pullTransactions.register` / `query` · `qr.generate` · `webhooks.constructEvent(Async)` · `generateSecurityCredential()`.
+**Available now (v0.x):**
+
+- `collect.stkPush` — STK Push, with the gotcha-defeating validation layer.
+- The phone / amount / timestamp / password primitives (`normalizePhone`, `phoneToNumber`, `makeTimestamp`, `generatePassword`, `validateAmount`).
+- The `DarajaError` hierarchy + `errorFromResult` (ResultCode classification).
+- OAuth token management (race-safe, 3599s TTL) and the HTTP transport.
+
+**On the [roadmap](./ROADMAP.md) (committed APIs, not yet shipped):**
+
+`c2b.registerUrls` · `b2c.send` · `b2b.pay` / float transfers · `balance.query` · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate` · `webhooks.constructEvent(Async)` · `generateSecurityCredential()`.
 
 Full surface in the [API reference](./docs) (published with each release).
 

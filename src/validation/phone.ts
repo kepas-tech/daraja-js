@@ -7,6 +7,8 @@
  * untouched. See gotchas #1 and #2.
  */
 
+import { DarajaValidationError } from '../errors.js';
+
 const SHA256_HEX = /^[a-f0-9]{64}$/i;
 const MSISDN = /^254\d{9}$/;
 
@@ -21,7 +23,7 @@ const MSISDN = /^254\d{9}$/;
  */
 export function normalizePhone(input: string): string {
   if (typeof input !== 'string' || input.trim() === '') {
-    throw new Error('phone is required');
+    throw new DarajaValidationError('phone is required');
   }
   const raw = input.trim();
 
@@ -32,7 +34,7 @@ export function normalizePhone(input: string): string {
 
   const digits = raw.replace(/[\s\-()+]/g, '');
   if (!/^\d+$/.test(digits)) {
-    throw new Error(`invalid phone number: ${input}`);
+    throw new DarajaValidationError(`invalid phone number: ${input}`);
   }
 
   let msisdn: string;
@@ -43,7 +45,7 @@ export function normalizePhone(input: string): string {
   } else if (digits.length === 9) {
     msisdn = `254${digits}`;
   } else {
-    throw new Error(`invalid phone number: ${input}`);
+    throw new DarajaValidationError(`invalid phone number: ${input}`);
   }
 
   return msisdn;
@@ -58,7 +60,7 @@ export function normalizePhone(input: string): string {
 export function phoneToNumber(input: string): number {
   const msisdn = normalizePhone(input);
   if (!MSISDN.test(msisdn)) {
-    throw new Error('cannot convert a hashed or non-dialable MSISDN to a number');
+    throw new DarajaValidationError('cannot convert a hashed or non-dialable MSISDN to a number');
   }
   return Number(msisdn);
 }
