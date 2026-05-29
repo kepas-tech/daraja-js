@@ -6,6 +6,7 @@
 import { TokenManager, type TokenResponse } from './auth.js';
 import { DarajaAuthError, DarajaValidationError } from './errors.js';
 import { HttpClient } from './http.js';
+import { type B2cSendInput, type B2cSendResult, send as b2cSend } from './resources/b2c.js';
 import { type RegisterUrlsInput, type RegisterUrlsResult, registerUrls } from './resources/c2b.js';
 import { type StkPushInput, type StkPushResult, stkPush } from './resources/stk-push.js';
 
@@ -19,6 +20,10 @@ export interface DarajaConfig {
   environment: 'sandbox' | 'production';
   /** STK transaction type. Defaults to PayBill. */
   transactionType?: 'CustomerPayBillOnline' | 'CustomerBuyGoodsOnline';
+  /** Initiator name — required for B2C/B2B/balance/status/reversal. */
+  initiator?: string;
+  /** RSA-encrypted initiator password (see `generateSecurityCredential`). */
+  securityCredential?: string;
   /** Retries on 5xx. Default 2. */
   maxNetworkRetries?: number;
   /** `fetch` override, for tests or custom runtimes. */
@@ -46,6 +51,11 @@ export class Daraja {
     registerUrls: (input: RegisterUrlsInput) => Promise<RegisterUrlsResult>;
   };
 
+  /** B2C — disburse money to a customer phone (money out). */
+  readonly b2c: {
+    send: (input: B2cSendInput) => Promise<B2cSendResult>;
+  };
+
   constructor(config: DarajaConfig) {
     validateConfig(config);
     this.config = config;
@@ -66,6 +76,9 @@ export class Daraja {
     };
     this.c2b = {
       registerUrls: (input) => registerUrls(this.http, this.config, input),
+    };
+    this.b2c = {
+      send: (input) => b2cSend(this.http, this.config, input),
     };
   }
 }

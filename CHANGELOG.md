@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0
+
+### Minor Changes
+
+- Add B2C (money out) and the SecurityCredential helper that unlocks the
+  initiator-authed APIs.
+
+  - `generateSecurityCredential({ password, certPem | certPath })` — RSA-encrypt
+    the initiator password (PKCS1 v1.5) + base64, exactly what B2C/B2B/balance/
+    status/reversal expect. Node-only offline helper; ships no certificate.
+  - `daraja.b2c.send({ phone, amount, resultUrl, queueTimeoutUrl, commandId?, remarks?, occasion? })`
+    — POST /mpesa/b2c/v1/paymentrequest with numeric PartyA/PartyB; returns the
+    async ack. Draws from the Utility account (gotcha #7). Requires `initiator` +
+    `securityCredential` on the client config.
+  - `parseB2cResult` — parse the async result callback (receipt, amount, recipient,
+    Utility/Working balances).
+
 ## 0.2.0
 
 ### Minor Changes

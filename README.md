@@ -105,6 +105,36 @@ app.post('/c2b/confirm', express.json(), (req, res) => {
 });
 ```
 
+### B2C — pay out to a customer phone
+
+Money out. Needs initiator auth — set `initiator` + `securityCredential` on the
+client. B2C draws from your **Utility** account (gotcha #7), so fund it first.
+
+```ts
+import { Daraja, generateSecurityCredential, parseB2cResult } from '@kepas/daraja-js';
+
+const daraja = new Daraja({
+  consumerKey, consumerSecret, shortcode: '600999', passkey, environment: 'sandbox',
+  initiator: 'apitest',
+  // one-time: RSA-encrypt your initiator password with Safaricom's cert
+  securityCredential: generateSecurityCredential({ password, certPath: './certs/sandbox.cer' }),
+});
+
+const ack = await daraja.b2c.send({
+  phone: '0712345678',
+  amount: 500,
+  resultUrl: 'https://example.com/b2c/result',
+  queueTimeoutUrl: 'https://example.com/b2c/timeout',
+  remarks: 'Refund',
+});
+
+// async result lands at resultUrl:
+app.post('/b2c/result', express.json(), (req, res) => {
+  const r = parseB2cResult(req.body); // r.success, r.mpesaReceipt, r.amount, r.recipientName
+  res.status(200).end();
+});
+```
+
 ### Re-emitting signed webhooks (Stripe-compatible)
 
 For platforms built on daraja-js that forward events to their own consumers —
@@ -157,6 +187,8 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 - `collect.stkPush` — STK Push, with the gotcha-defeating validation layer.
 - `parseStkCallback` — parse the async STK result Safaricom posts back.
 - `c2b.registerUrls` + `parseC2bConfirmation` / `parseC2bValidation` + `c2bAccept` / `c2bReject` — capture direct PayBill/Till payments (confirmation is terminal — gotcha #8).
+- `b2c.send` + `parseB2cResult` — disburse to a customer phone (money out; Utility account — gotcha #7).
+- `generateSecurityCredential` — RSA-encrypt the initiator password for the initiator-authed APIs.
 - `webhooks.sign` / `constructEvent` / `constructEventAsync` — Stripe-compatible signing + verification (sync + edge).
 - The phone / amount / timestamp / password primitives (`normalizePhone`, `phoneToNumber`, `makeTimestamp`, `generatePassword`, `validateAmount`).
 - The `DarajaError` hierarchy + `errorFromResult` (ResultCode classification).
@@ -164,7 +196,7 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 
 **On the [roadmap](./ROADMAP.md) (committed APIs, not yet shipped):**
 
-`b2c.send` · `b2b.pay` / float transfers · `balance.query` · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate` · `generateSecurityCredential()`.
+`b2b.pay` / float transfers · `balance.query` · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate`.
 
 Full surface in the [API reference](./docs) (published with each release).
 

@@ -12,6 +12,11 @@ export const VERSION: string =
 
 // Client
 export { Daraja, type DarajaConfig } from './client.js';
+// SecurityCredential generation (initiator-authed APIs)
+export {
+  generateSecurityCredential,
+  type SecurityCredentialInput,
+} from './crypto/security-credential.js';
 // Error hierarchy
 export {
   DarajaAPIError,
@@ -26,6 +31,14 @@ export {
   DarajaValidationError,
   errorFromResult,
 } from './errors.js';
+// B2C — disbursement + result parsing
+export {
+  type B2cCommandId,
+  type B2cResult,
+  type B2cSendInput,
+  type B2cSendResult,
+  parseB2cResult,
+} from './resources/b2c.js';
 // C2B — registration + callback parsing + validation responses
 export {
   type C2bConfirmation,
