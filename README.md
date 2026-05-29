@@ -40,9 +40,9 @@ import { Daraja, DarajaInsufficientFundsError } from '@kepas/daraja-js';
 const daraja = new Daraja({
   consumerKey: process.env.MPESA_CONSUMER_KEY!,
   consumerSecret: process.env.MPESA_CONSUMER_SECRET!,
-  shortcode: '4052037',
+  shortcode: '600999',                // your own shortcode (600999 = Safaricom sandbox)
   passkey: process.env.MPESA_PASSKEY!,
-  environment: 'production',          // 'sandbox' | 'production'
+  environment: 'sandbox',             // 'sandbox' | 'production'
   maxNetworkRetries: 2,
 });
 
