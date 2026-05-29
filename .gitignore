@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build
+dist/
+*.tsbuildinfo
+
+# test + coverage
+coverage/
+.nyc_output/
+
+# env + secrets — NEVER commit Daraja credentials or certificates
+.env
+.env.*
+!.env.example
+*.cer
+*.pem
+*.key
+
+# editor + os
+.DS_Store
+.idea/
+.vscode/
+*.log
