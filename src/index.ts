@@ -9,24 +9,22 @@ export const VERSION = '0.0.0';
 
 // Client
 export { Daraja, type DarajaConfig } from './client.js';
-export type { StkPushInput, StkPushResult } from './resources/stk-push.js';
-
 // Error hierarchy
 export {
-  DarajaError,
-  DarajaValidationError,
-  DarajaAuthError,
-  DarajaConnectionError,
   DarajaAPIError,
+  DarajaAuthError,
+  DarajaCancelledError,
+  DarajaConnectionError,
+  DarajaError,
+  type DarajaErrorContext,
   DarajaInsufficientFundsError,
   DarajaUserUnreachableError,
-  DarajaCancelledError,
+  DarajaValidationError,
   errorFromResult,
-  type DarajaErrorContext,
 } from './errors.js';
-
+export type { StkPushInput, StkPushResult } from './resources/stk-push.js';
+export { validateAmount } from './validation/amount.js';
+export { generatePassword } from './validation/password.js';
 // Validation + request primitives (the gotcha-defeating layer)
 export { normalizePhone, phoneToNumber } from './validation/phone.js';
 export { makeTimestamp } from './validation/timestamp.js';
-export { generatePassword } from './validation/password.js';
-export { validateAmount } from './validation/amount.js';

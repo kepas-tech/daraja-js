@@ -1,4 +1,4 @@
-import { http, HttpResponse, delay } from 'msw';
+import { delay, HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DarajaAPIError, DarajaAuthError, DarajaConnectionError } from '../../src/errors.js';
