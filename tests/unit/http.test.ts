@@ -57,7 +57,7 @@ describe('HttpClient.post', () => {
       }),
     );
 
-    const res = await makeClient({ maxRetries: 2 }).post('/x', {});
+    const res = await makeClient({ maxRetries: 2 }).post('/x', {}, { retryable: true });
 
     expect(res).toEqual({ ok: true });
     expect(calls).toBe(2);
@@ -72,10 +72,24 @@ describe('HttpClient.post', () => {
       }),
     );
 
-    await expect(makeClient({ maxRetries: 1 }).post('/x', {})).rejects.toBeInstanceOf(
+    await expect(
+      makeClient({ maxRetries: 1 }).post('/x', {}, { retryable: true }),
+    ).rejects.toBeInstanceOf(DarajaAPIError);
+    expect(calls).toBe(2); // 1 initial + 1 retry
+  });
+
+  it('does NOT retry by default — payment-safe (no retryable flag)', async () => {
+    let calls = 0;
+    server.use(
+      http.post(`${BASE}/x`, () => {
+        calls += 1;
+        return new HttpResponse(null, { status: 500 });
+      }),
+    );
+    await expect(makeClient({ maxRetries: 3 }).post('/x', {})).rejects.toBeInstanceOf(
       DarajaAPIError,
     );
-    expect(calls).toBe(2); // 1 initial + 1 retry
+    expect(calls).toBe(1); // single attempt — no retry without opt-in
   });
 
   it('does NOT retry a 4xx (client error)', async () => {

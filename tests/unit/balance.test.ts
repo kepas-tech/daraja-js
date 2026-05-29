@@ -88,6 +88,29 @@ describe('balance.query', () => {
       }),
     ).rejects.toBeInstanceOf(DarajaAPIError);
   });
+
+  it('DOES retry on 5xx — read-only query is safe to repeat', async () => {
+    mockOAuth();
+    let calls = 0;
+    server.use(
+      http.post(ENDPOINT, () => {
+        calls += 1;
+        return calls < 2
+          ? new HttpResponse(null, { status: 503 })
+          : HttpResponse.json({
+              ConversationID: 'AG',
+              ResponseCode: '0',
+              ResponseDescription: 'ok',
+            });
+      }),
+    );
+    const res = await makeDaraja().balance.query({
+      resultUrl: 'https://example.com/r',
+      queueTimeoutUrl: 'https://example.com/t',
+    });
+    expect(res.responseCode).toBe('0');
+    expect(calls).toBe(2); // retried once, then succeeded
+  });
 });
 
 describe('parseAccountBalance (pipe-delimited string — gotcha #6)', () => {

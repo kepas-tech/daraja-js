@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      valibot:
-        specifier: ^1.4.1
-        version: 1.4.1(typescript@6.0.3)
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.4.16
@@ -1714,14 +1710,6 @@ packages:
   until-async@3.0.2:
     resolution: {integrity: sha512-IiSk4HlzAMqTUseHHe3VhIGyuFmN90zMTpD3Z3y8jeQbzLIq500MVM7Jq2vUAnTKAFPJrqwkzr6PoTcPhGcOiw==}
 
-  valibot@1.4.1:
-    resolution: {integrity: sha512-klCmFTz2jeDluy9RwX+F884TCiogtdBJ/YaxSx1EOBYXa3NXNWj8kR1jjN8rzluwojJVWWaHJ4r1U5LfICnM3g==}
-    peerDependencies:
-      typescript: '>=5'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
   vite-node@2.1.9:
     resolution: {integrity: sha512-AM9aQ/IPrW/6ENLQg3AGY4K1N2TGZdR5e4gu/MmmR2xR3Ll1+dib+nook92g4TV3PXVyeyxdWwtaCAiUL0hMxA==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -3368,10 +3356,6 @@ snapshots:
   universalify@0.1.2: {}
 
   until-async@3.0.2: {}
-
-  valibot@1.4.1(typescript@6.0.3):
-    optionalDependencies:
-      typescript: 6.0.3
 
   vite-node@2.1.9(@types/node@20.19.41):
     dependencies:

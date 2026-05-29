@@ -7,8 +7,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 [![Types](https://img.shields.io/badge/types-included-blue.svg)](#typescript)
 
-> [!WARNING]
-> **Alpha — pre-1.0.** The API surface is still settling. Do not run against production credentials on a shared host until v1.0. See the [roadmap](./ROADMAP.md).
+> **Stable (1.x).** The public API follows [SemVer](https://semver.org) — breaking changes bump the major. Live-tested against production M-Pesa. See the [roadmap](./ROADMAP.md) for what's next.
 
 > **Not affiliated with or endorsed by Safaricom PLC.** "Daraja" is the public name of Safaricom's M-Pesa Open API; this is an independent, community toolkit. See [TRADEMARK.md](./TRADEMARK.md).
 
@@ -204,7 +203,7 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 
 ## What's covered
 
-**Available now (v0.x):**
+**Available now:**
 
 - `collect.stkPush` — STK Push, with the gotcha-defeating validation layer.
 - `parseStkCallback` — parse the async STK result Safaricom posts back.
@@ -233,7 +232,7 @@ Full surface in the [API reference](https://nellylemmy.github.io/daraja-js/) (au
 
 Types are bundled — no `@types/daraja-js` needed. Inputs and Daraja callbacks are fully typed; the error hierarchy (`DarajaError` → `DarajaAuthError`, `DarajaInsufficientFundsError`, …) lets you branch on recoverable vs fatal.
 
-## Meaningful errors (proven, not guessed)
+## Proven meaningful errors
 
 Safaricom returns terse codes (`1037`, `SFC_IC0003`, …) and **publishes no complete code reference**. daraja-js ships a catalog where every meaning is **proven** — observed in real production responses, our own code, or official docs — never from community guesswork. Parsed results carry the extras:
 

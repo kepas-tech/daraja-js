@@ -64,6 +64,19 @@ describe('webhooks.sign + constructEvent (sync)', () => {
       webhooks.constructEvent({ payload: PAYLOAD, signature: 'garbage', secret: SECRET }),
     ).toThrow(DarajaSignatureError);
   });
+
+  it('rejects empty/zero/negative timestamp even with the replay window disabled', () => {
+    for (const sig of ['t=,v1=abc', 't=0,v1=abc', 't=-5,v1=abc']) {
+      expect(() =>
+        webhooks.constructEvent({
+          payload: PAYLOAD,
+          signature: sig,
+          secret: SECRET,
+          toleranceSec: 0,
+        }),
+      ).toThrow(DarajaSignatureError);
+    }
+  });
 });
 
 describe('webhooks.constructEventAsync (WebCrypto)', () => {

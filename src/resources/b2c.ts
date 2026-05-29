@@ -11,6 +11,7 @@
 import type { DarajaConfig } from '../client.js';
 import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { toArray } from '../internal.js';
 import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 import { validateAmount } from '../validation/amount.js';
 import { phoneToNumber } from '../validation/phone.js';
@@ -130,7 +131,7 @@ export function parseB2cResult(body: unknown): B2cResult {
   if (!result || result.ResultCode == null) {
     throw new DarajaValidationError('not a B2C result envelope');
   }
-  const p = extractParams(result.ResultParameters?.ResultParameter ?? []);
+  const p = extractParams(toArray(result.ResultParameters?.ResultParameter));
 
   const out: B2cResult = {
     resultCode: result.ResultCode,

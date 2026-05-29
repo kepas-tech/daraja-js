@@ -10,6 +10,7 @@
 import type { DarajaConfig } from '../client.js';
 import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { toArray } from '../internal.js';
 import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 import { generatePassword } from '../validation/password.js';
 import { makeTimestamp } from '../validation/timestamp.js';
@@ -95,12 +96,16 @@ export async function stkPush(
   input: StkStatusInput,
 ): Promise<StkStatusResult> {
   const timestamp = makeTimestamp();
-  const raw = await http.post<StkStatusRaw>(STK_QUERY, {
-    BusinessShortCode: Number(config.shortcode),
-    Password: generatePassword(config.shortcode, config.passkey, timestamp),
-    Timestamp: timestamp,
-    CheckoutRequestID: input.checkoutRequestId,
-  });
+  const raw = await http.post<StkStatusRaw>(
+    STK_QUERY,
+    {
+      BusinessShortCode: Number(config.shortcode),
+      Password: generatePassword(config.shortcode, config.passkey, timestamp),
+      Timestamp: timestamp,
+      CheckoutRequestID: input.checkoutRequestId,
+    },
+    { retryable: true },
+  ); // status query — safe to retry on 5xx
   return {
     merchantRequestId: raw.MerchantRequestID ?? '',
     checkoutRequestId: raw.CheckoutRequestID ?? input.checkoutRequestId,
@@ -122,17 +127,21 @@ export async function transaction(
       'status.transaction requires config.initiator and config.securityCredential',
     );
   }
-  const raw = await http.post<AckRaw>(TX_QUERY, {
-    Initiator: config.initiator,
-    SecurityCredential: config.securityCredential,
-    CommandID: 'TransactionStatusQuery',
-    TransactionID: input.transactionId,
-    PartyA: Number(config.shortcode),
-    IdentifierType: input.identifierType ?? '4',
-    Remarks: (input.remarks ?? 'Status query').slice(0, 100),
-    QueueTimeOutURL: input.queueTimeoutUrl,
-    ResultURL: input.resultUrl,
-  });
+  const raw = await http.post<AckRaw>(
+    TX_QUERY,
+    {
+      Initiator: config.initiator,
+      SecurityCredential: config.securityCredential,
+      CommandID: 'TransactionStatusQuery',
+      TransactionID: input.transactionId,
+      PartyA: Number(config.shortcode),
+      IdentifierType: input.identifierType ?? '4',
+      Remarks: (input.remarks ?? 'Status query').slice(0, 100),
+      QueueTimeOutURL: input.queueTimeoutUrl,
+      ResultURL: input.resultUrl,
+    },
+    { retryable: true },
+  ); // status query — safe to retry on 5xx
   if (raw.ResponseCode !== '0') {
     throw errorFromResponse({
       scope: 'status',
@@ -157,7 +166,7 @@ export function parseStatusResult(body: unknown): StatusResult {
     throw new DarajaValidationError('not a status result envelope');
   }
   const params: Record<string, unknown> = {};
-  for (const it of result.ResultParameters?.ResultParameter ?? []) {
+  for (const it of toArray(result.ResultParameters?.ResultParameter)) {
     params[it.Key] = it.Value;
   }
   const out: StatusResult = {

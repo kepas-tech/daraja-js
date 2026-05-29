@@ -10,6 +10,7 @@
 import type { DarajaConfig } from '../client.js';
 import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { toArray } from '../internal.js';
 import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 import { validateAmount } from '../validation/amount.js';
 import { generatePassword } from '../validation/password.js';
@@ -140,8 +141,8 @@ export function parseStkCallback(body: unknown): StkCallbackResult {
     success: cb.ResultCode === 0,
   };
 
-  const items = cb.CallbackMetadata?.Item;
-  if (items) {
+  const items = toArray(cb.CallbackMetadata?.Item);
+  if (items.length) {
     const value = (name: string): unknown => items.find((i) => i.Name === name)?.Value;
     result.amount = value('Amount') as number | undefined;
     result.mpesaReceiptNumber = value('MpesaReceiptNumber') as string | undefined;

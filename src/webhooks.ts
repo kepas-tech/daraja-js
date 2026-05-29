@@ -84,7 +84,9 @@ function parseSignatureHeader(header: string): { timestamp: number; v1: string }
   }
   const timestamp = Number(fields.t);
   const v1 = fields.v1;
-  if (!Number.isFinite(timestamp) || !v1) {
+  // Require a positive integer timestamp: `t=` (→0) or negatives must fail even
+  // when toleranceSec=0 disables the replay window.
+  if (!Number.isInteger(timestamp) || timestamp <= 0 || !v1) {
     throw new DarajaSignatureError('malformed signature header');
   }
   return { timestamp, v1 };

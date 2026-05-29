@@ -47,14 +47,18 @@ export async function generate(
   config: QrConfig,
   input: QrGenerateInput,
 ): Promise<QrGenerateResult> {
-  const raw = await http.post<QrRaw>(ENDPOINT, {
-    MerchantName: input.merchantName ?? String(config.shortcode),
-    RefNo: input.accountReference,
-    Amount: input.amount ?? 0,
-    TrxCode: input.trxCode ?? 'PB',
-    CPI: String(config.shortcode),
-    Size: String(input.size ?? 300),
-  });
+  const raw = await http.post<QrRaw>(
+    ENDPOINT,
+    {
+      MerchantName: input.merchantName ?? String(config.shortcode),
+      RefNo: input.accountReference,
+      Amount: input.amount ?? 0,
+      TrxCode: input.trxCode ?? 'PB',
+      CPI: String(config.shortcode),
+      Size: String(input.size ?? 300),
+    },
+    { retryable: true },
+  ); // QR generation moves no money — safe to retry on 5xx
   if (raw.ResponseCode !== '00') {
     throw errorFromResponse({
       scope: 'qr',

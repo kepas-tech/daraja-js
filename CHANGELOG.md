@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.2.0
+
+### Minor Changes
+
+- Fix findings from the post-1.1.1 expert review.
+
+  - **Parser crash on single-param callbacks (bug, observed in production):** Daraja
+    collapses a one-element `ResultParameters.ResultParameter` (and STK
+    `CallbackMetadata.Item`) to a bare object, not an array — the parsers did
+    `for…of` over it and threw `TypeError`. All six parsers now normalize via a
+    `toArray` helper. (`?? []` did not cover this — a non-null object passed through.)
+  - **No 5xx-retry on non-idempotent payment POSTs:** `http.post` gains a `retryable`
+    flag, default **false** (payment-safe). STK/B2C/B2B/reversal never retry on 5xx
+    (no duplicate disbursement); reads/registrations (balance, status, c2b register,
+    qr, pull) opt in. Timeouts were already never retried.
+  - **Drop unused `valibot` runtime dependency** (zero imports) — `dependencies` is now empty.
+  - **Webhook timestamp guard:** reject empty/zero/negative `t=` even when the replay
+    window is disabled (`toleranceSec: 0`).
+  - **CJS types:** `exports` now resolves `dist/index.d.cts` for `require` consumers.
+  - **Docs:** reconciled README/SECURITY to stable 1.x (dropped "alpha/pre-1.0");
+    unexported internal `HttpClientOptions`.
+
 ## 1.1.1
 
 ### Patch Changes

@@ -134,6 +134,26 @@ describe('b2c.send', () => {
       }),
     ).rejects.toBeInstanceOf(DarajaAPIError);
   });
+
+  it('does NOT retry on 5xx — payment-safe (single attempt, no double-disbursement)', async () => {
+    mockOAuth();
+    let calls = 0;
+    server.use(
+      http.post(ENDPOINT, () => {
+        calls += 1;
+        return new HttpResponse(null, { status: 503 });
+      }),
+    );
+    await expect(
+      makeDaraja().b2c.send({
+        phone: '254712345678',
+        amount: 100,
+        resultUrl: 'https://example.com/r',
+        queueTimeoutUrl: 'https://example.com/t',
+      }),
+    ).rejects.toBeInstanceOf(DarajaAPIError);
+    expect(calls).toBe(1); // money-mover: never re-sent on 5xx
+  });
 });
 
 describe('parseB2cResult', () => {

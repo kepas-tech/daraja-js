@@ -48,12 +48,16 @@ export async function registerUrl(
   config: PullConfig,
   input: PullRegisterInput,
 ): Promise<PullRegisterResult> {
-  const raw = await http.post<Record<string, unknown>>(REGISTER, {
-    ShortCode: Number(config.shortcode),
-    RequestType: 'Pull',
-    NominatedNumber: normalizePhone(input.nominatedNumber),
-    CallBackURL: input.callbackUrl,
-  });
+  const raw = await http.post<Record<string, unknown>>(
+    REGISTER,
+    {
+      ShortCode: Number(config.shortcode),
+      RequestType: 'Pull',
+      NominatedNumber: normalizePhone(input.nominatedNumber),
+      CallBackURL: input.callbackUrl,
+    },
+    { retryable: true },
+  ); // idempotent registration — safe to retry on 5xx
   const status = String(raw['Response Status'] ?? '');
   // 1000 = first registration, 1001 = already registered — both are success.
   if (status !== '1000' && status !== '1001') {
@@ -71,12 +75,16 @@ export async function query(
   config: PullConfig,
   input: PullQueryInput,
 ): Promise<PullQueryResult> {
-  const raw = await http.post<Record<string, unknown>>(QUERY, {
-    ShortCode: Number(config.shortcode),
-    StartDate: input.startDate,
-    EndDate: input.endDate,
-    OffSetValue: input.offset ?? 0,
-  });
+  const raw = await http.post<Record<string, unknown>>(
+    QUERY,
+    {
+      ShortCode: Number(config.shortcode),
+      StartDate: input.startDate,
+      EndDate: input.endDate,
+      OffSetValue: input.offset ?? 0,
+    },
+    { retryable: true },
+  ); // read-only query — safe to retry on 5xx
   // Response is a nested array [[rec, rec, ...]] — flatten one level.
   const resp = (raw as { Response?: unknown }).Response;
   const transactions = (Array.isArray(resp) ? resp : []).flat() as Array<Record<string, unknown>>;

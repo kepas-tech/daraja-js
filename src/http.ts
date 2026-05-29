@@ -10,7 +10,7 @@
 
 import { DarajaAPIError, DarajaAuthError, DarajaConnectionError } from './errors.js';
 
-export interface HttpClientOptions {
+interface HttpClientOptions {
   /** Base URL, e.g. `https://api.safaricom.co.ke`. */
   baseUrl: string;
   /** Supplies a valid OAuth token (from the TokenManager). */
@@ -50,8 +50,19 @@ export class HttpClient {
     this.sleep = options.sleep ?? defaultSleep;
   }
 
-  /** POST a JSON body and return the parsed JSON response. */
-  async post<T = unknown>(path: string, body: unknown): Promise<T> {
+  /**
+   * POST a JSON body and return the parsed JSON response.
+   *
+   * `retryable` gates 5xx retries and defaults to **false** — payment-safe: a 5xx
+   * returned after Safaricom queued a money-moving request must NOT be re-sent
+   * (duplicate disbursement risk). Only idempotent calls (queries, registrations)
+   * pass `retryable: true`. Timeouts/network errors are never retried regardless.
+   */
+  async post<T = unknown>(
+    path: string,
+    body: unknown,
+    opts: { retryable?: boolean } = {},
+  ): Promise<T> {
     let lastError: unknown;
     for (let attempt = 0; attempt <= this.maxRetries; attempt += 1) {
       if (attempt > 0) {
@@ -61,7 +72,7 @@ export class HttpClient {
         return await this.attempt<T>(path, body);
       } catch (err) {
         lastError = err;
-        if (!isRetryable(err)) {
+        if (!opts.retryable || !isRetryable(err)) {
           throw err;
         }
       }

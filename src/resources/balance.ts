@@ -10,6 +10,7 @@
 import type { DarajaConfig } from '../client.js';
 import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { toArray } from '../internal.js';
 import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 
 type BalanceConfig = Pick<DarajaConfig, 'shortcode' | 'initiator' | 'securityCredential'>;
@@ -74,16 +75,20 @@ export async function query(
       'balance.query requires config.initiator and config.securityCredential',
     );
   }
-  const raw = await http.post<AckRaw>(ENDPOINT, {
-    Initiator: config.initiator,
-    SecurityCredential: config.securityCredential,
-    CommandID: 'AccountBalance',
-    PartyA: Number(config.shortcode),
-    IdentifierType: '4', // organization shortcode
-    Remarks: (input.remarks ?? 'Balance query').slice(0, 100),
-    QueueTimeOutURL: input.queueTimeoutUrl,
-    ResultURL: input.resultUrl,
-  });
+  const raw = await http.post<AckRaw>(
+    ENDPOINT,
+    {
+      Initiator: config.initiator,
+      SecurityCredential: config.securityCredential,
+      CommandID: 'AccountBalance',
+      PartyA: Number(config.shortcode),
+      IdentifierType: '4', // organization shortcode
+      Remarks: (input.remarks ?? 'Balance query').slice(0, 100),
+      QueueTimeOutURL: input.queueTimeoutUrl,
+      ResultURL: input.resultUrl,
+    },
+    { retryable: true },
+  ); // read-only query — safe to retry on 5xx
   if (raw.ResponseCode !== '0') {
     throw errorFromResponse({
       scope: 'balance',
@@ -133,7 +138,7 @@ export function parseBalanceResult(body: unknown): BalanceResult {
   if (!result || result.ResultCode == null) {
     throw new DarajaValidationError('not a balance result envelope');
   }
-  const items = result.ResultParameters?.ResultParameter ?? [];
+  const items = toArray(result.ResultParameters?.ResultParameter);
   const rawBalance = items.find((i) => i.Key === 'AccountBalance')?.Value;
   const out: BalanceResult = {
     resultCode: result.ResultCode,

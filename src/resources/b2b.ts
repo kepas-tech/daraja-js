@@ -14,6 +14,7 @@
 import type { DarajaConfig } from '../client.js';
 import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
+import { toArray } from '../internal.js';
 import { applyClassification, type CodeClassificationFields } from '../result-codes.js';
 import { validateAmount } from '../validation/amount.js';
 
@@ -167,7 +168,7 @@ export function parseB2bResult(body: unknown): B2bResult {
     throw new DarajaValidationError('not a B2B result envelope');
   }
   const params: Record<string, unknown> = {};
-  for (const it of result.ResultParameters?.ResultParameter ?? []) {
+  for (const it of toArray(result.ResultParameters?.ResultParameter)) {
     params[it.Key] = it.Value;
   }
   const out: B2bResult = {

@@ -8,7 +8,7 @@
 
 Use GitHub's [private vulnerability reporting](https://github.com/nellylemmy/daraja-js/security/advisories/new) (Security tab → Report a vulnerability), or email **nelsonlemmy61@gmail.com** with `[SECURITY]` in the subject.
 
-Include: affected version, a reproduction (credentials scrubbed), and impact. PGP key fingerprint will be published here before v1.0.
+Include: affected version, a reproduction (credentials scrubbed), and impact. For encrypted reports, request a key via the private advisory thread.
 
 ## Response SLA
 
@@ -41,4 +41,5 @@ Out of scope:
 
 ## Supported versions
 
-Until v1.0, only the latest release receives fixes. A formal support matrix lands with v1.0.
+The latest released `1.x` minor receives security fixes. Older minors are not
+patched — upgrade to the latest `1.x` (backward-compatible per SemVer).

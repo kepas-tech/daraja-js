@@ -45,12 +45,16 @@ export async function registerUrls(
   config: C2bConfig,
   input: RegisterUrlsInput,
 ): Promise<RegisterUrlsResult> {
-  const raw = await http.post<RegisterRaw>(REGISTER_ENDPOINT, {
-    ShortCode: config.shortcode,
-    ResponseType: input.responseType ?? 'Completed',
-    ConfirmationURL: input.confirmationUrl,
-    ValidationURL: input.validationUrl,
-  });
+  const raw = await http.post<RegisterRaw>(
+    REGISTER_ENDPOINT,
+    {
+      ShortCode: config.shortcode,
+      ResponseType: input.responseType ?? 'Completed',
+      ConfirmationURL: input.confirmationUrl,
+      ValidationURL: input.validationUrl,
+    },
+    { retryable: true },
+  ); // idempotent registration — safe to retry on 5xx
   return {
     responseCode: raw.ResponseCode ?? '',
     responseDescription: raw.ResponseDescription ?? '',
