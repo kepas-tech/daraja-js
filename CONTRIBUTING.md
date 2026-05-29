@@ -56,6 +56,21 @@ Node 22 LTS (`.nvmrc`). The published package targets Node 20+.
 - At least one maintainer review.
 - Signed commits + DCO sign-off.
 
+## Release & post-publish verification
+
+Releases are automated via Changesets + npm Trusted Publishing (OIDC):
+
+1. Add a changeset (`pnpm changeset`) for any user-facing change.
+2. Merge to `main` → the Release workflow publishes to npm with provenance — no token.
+3. **After each release, verify the *published* artifact**, not just local source:
+   ```bash
+   pnpm verify:published          # installs @latest from npm, exercises the public surface
+   pnpm verify:published 0.2.0    # or pin a version
+   ```
+   This catches packaging/export regressions a local test can't.
+4. For API-touching features, also run the live integration test against the
+   sandbox: `DARAJA_TEST_CONSUMER_KEY=… DARAJA_TEST_CONSUMER_SECRET=… pnpm test:integration`.
+
 ## Maintenance SLA
 
 We aim to ship a security patch within 7 days and non-security patches monthly. Daraja changes silently sometimes — if you spot drift, open an issue with the failing payload (credentials scrubbed).

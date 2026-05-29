@@ -50,6 +50,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run --dir tests/integration",
+    "verify:published": "bash scripts/smoke-published.sh",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
