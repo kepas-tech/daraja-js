@@ -39,6 +39,9 @@ export class DarajaAuthError extends DarajaError {}
 /** Network-level failure: DNS, TLS, timeout, connection reset. Retryable. */
 export class DarajaConnectionError extends DarajaError {}
 
+/** Webhook signature missing, malformed, mismatched, or outside the replay window. */
+export class DarajaSignatureError extends DarajaError {}
+
 /** Daraja accepted the request but reported a non-success `ResultCode`. */
 export class DarajaAPIError extends DarajaError {
   readonly resultCode?: number | undefined;

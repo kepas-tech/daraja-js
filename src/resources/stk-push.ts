@@ -8,7 +8,7 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaAPIError } from '../errors.js';
+import { DarajaAPIError, DarajaValidationError } from '../errors.js';
 import type { HttpClient } from '../http.js';
 import { validateAmount } from '../validation/amount.js';
 import { generatePassword } from '../validation/password.js';
@@ -86,4 +86,62 @@ export async function stkPush(
     responseDescription: raw.ResponseDescription ?? '',
     customerMessage: raw.CustomerMessage ?? '',
   };
+}
+
+/** The async STK Push result Safaricom posts to your callback URL. */
+export interface StkCallbackResult {
+  merchantRequestId: string;
+  checkoutRequestId: string;
+  resultCode: number;
+  resultDesc: string;
+  /** `true` when `resultCode === 0`. */
+  success: boolean;
+  amount?: number | undefined;
+  mpesaReceiptNumber?: string | undefined;
+  phoneNumber?: number | undefined;
+  transactionDate?: number | undefined;
+}
+
+interface StkCallbackBody {
+  Body?: {
+    stkCallback?: {
+      MerchantRequestID?: string;
+      CheckoutRequestID?: string;
+      ResultCode?: number;
+      ResultDesc?: string;
+      CallbackMetadata?: { Item?: Array<{ Name: string; Value?: unknown }> };
+    };
+  };
+}
+
+/**
+ * Parse the STK Push result callback (the body Safaricom POSTs to your callback
+ * URL). Note: Daraja does not sign this callback — pair it with IP allowlisting
+ * for Safaricom's ranges. Accepts a parsed object or a raw JSON string.
+ */
+export function parseStkCallback(body: unknown): StkCallbackResult {
+  const obj = (typeof body === 'string' ? JSON.parse(body) : body) as StkCallbackBody;
+  const cb = obj?.Body?.stkCallback;
+  if (!cb || cb.CheckoutRequestID == null || cb.ResultCode == null) {
+    throw new DarajaValidationError('not an STK Push callback');
+  }
+
+  const result: StkCallbackResult = {
+    merchantRequestId: cb.MerchantRequestID ?? '',
+    checkoutRequestId: cb.CheckoutRequestID,
+    resultCode: cb.ResultCode,
+    resultDesc: cb.ResultDesc ?? '',
+    success: cb.ResultCode === 0,
+  };
+
+  const items = cb.CallbackMetadata?.Item;
+  if (items) {
+    const value = (name: string): unknown => items.find((i) => i.Name === name)?.Value;
+    result.amount = value('Amount') as number | undefined;
+    result.mpesaReceiptNumber = value('MpesaReceiptNumber') as string | undefined;
+    result.phoneNumber = value('PhoneNumber') as number | undefined;
+    result.transactionDate = value('TransactionDate') as number | undefined;
+  }
+
+  return result;
 }

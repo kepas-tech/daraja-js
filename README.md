@@ -64,11 +64,27 @@ console.log(res.checkoutRequestId);
 const { Daraja } = require('daraja-js');
 ```
 
-### Webhook receiver (Express) — *planned, not yet released*
+### Receiving the STK result (Daraja callback)
 
-> The webhook verifier lands in an upcoming release. The shape below is the
-> committed API, shown so you can plan around it. Until then, verify per the
-> Stripe-compatible scheme documented in [SECURITY.md](./SECURITY.md).
+Safaricom POSTs the async result to your `callbackUrl`. Daraja does **not** sign
+it, so pair this with an IP allowlist for Safaricom's ranges.
+
+```ts
+import { parseStkCallback } from 'daraja-js';
+
+app.post('/webhooks/mpesa/stk', express.json(), (req, res) => {
+  const result = parseStkCallback(req.body);
+  if (result.success) {
+    // result.mpesaReceiptNumber, result.amount, result.phoneNumber
+  }
+  res.status(200).end(); // ALWAYS 200 to Safaricom
+});
+```
+
+### Re-emitting signed webhooks (Stripe-compatible)
+
+For platforms built on daraja-js that forward events to their own consumers —
+sign on send, verify on receive. Works on Node and edge runtimes.
 
 ```ts
 import { webhooks } from 'daraja-js';
@@ -115,13 +131,15 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 **Available now (v0.x):**
 
 - `collect.stkPush` — STK Push, with the gotcha-defeating validation layer.
+- `parseStkCallback` — parse the async STK result Safaricom posts back.
+- `webhooks.sign` / `constructEvent` / `constructEventAsync` — Stripe-compatible signing + verification (sync + edge).
 - The phone / amount / timestamp / password primitives (`normalizePhone`, `phoneToNumber`, `makeTimestamp`, `generatePassword`, `validateAmount`).
 - The `DarajaError` hierarchy + `errorFromResult` (ResultCode classification).
 - OAuth token management (race-safe, 3599s TTL) and the HTTP transport.
 
 **On the [roadmap](./ROADMAP.md) (committed APIs, not yet shipped):**
 
-`c2b.registerUrls` · `b2c.send` · `b2b.pay` / float transfers · `balance.query` · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate` · `webhooks.constructEvent(Async)` · `generateSecurityCredential()`.
+`c2b.registerUrls` · `b2c.send` · `b2b.pay` / float transfers · `balance.query` · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate` · `generateSecurityCredential()`.
 
 Full surface in the [API reference](./docs) (published with each release).
 
