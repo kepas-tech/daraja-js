@@ -18,6 +18,14 @@ describe('normalizePhone', () => {
     expect(normalizePhone('712345678')).toBe('254712345678');
   });
 
+  it('handles the newer 011X ranges, not just 07XX', () => {
+    expect(normalizePhone('0110123456')).toBe('254110123456');
+    expect(normalizePhone('+254110123456')).toBe('254110123456');
+    expect(normalizePhone('254110123456')).toBe('254110123456');
+    expect(normalizePhone('110123456')).toBe('254110123456');
+    expect(phoneToNumber('0110123456')).toBe(254110123456);
+  });
+
   it('strips spaces, dashes, and parentheses before normalizing', () => {
     expect(normalizePhone('0712 345 678')).toBe('254712345678');
     expect(normalizePhone('+254-712-345-678')).toBe('254712345678');

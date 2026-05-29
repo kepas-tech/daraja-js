@@ -15,9 +15,10 @@ const MSISDN = /^254\d{9}$/;
 /**
  * Normalize a Kenyan phone number to `254XXXXXXXXX`.
  *
- * Accepts `0712345678`, `+254712345678`, `254712345678`, `712345678`, and
- * (pass-through) a 64-char SHA-256 hex hash. Spaces, dashes, parentheses, and a
- * leading `+` are stripped first.
+ * Accepts any Kenyan range (`07XX` and the newer `01XX`): `0712345678`,
+ * `0110123456`, `+254712345678`, `254712345678`, `712345678`, and (pass-through)
+ * a 64-char SHA-256 hex hash. Spaces, dashes, parentheses, and a leading `+` are
+ * stripped first.
  *
  * @throws if the input is empty or not a recognizable Kenyan MSISDN.
  */

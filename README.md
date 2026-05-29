@@ -109,7 +109,7 @@ These are real production failures, encoded so you never meet them:
 | # | Gotcha | How the SDK handles it |
 |---|--------|------------------------|
 | 1 | STK `PartyA`/`PhoneNumber` must be JSON **numbers** — strings silently time out (ResultCode 1037) | Cast after normalization, enforced by the request type |
-| 2 | Phone numbers arrive in 5 formats (`07…`, `+254…`, `254…`, `7…`, SHA-256 hex) | `normalizePhone()`, property-tested |
+| 2 | Phone numbers arrive in many formats — `07XX` **and** the newer `01XX`, plus `+254…`, `254…`, bare 9-digit, and a hashed (SHA-256 hex) MSISDN | `normalizePhone()`, tested across all ranges |
 | 3 | Timestamp is `YYYYMMDDHHMMSS` UTC, zero-padded | Generated internally |
 | 4 | STK password = `base64(shortcode + passkey + timestamp)`, order matters | Derived for you |
 | 5 | B2B callback URL is **shared** between float transfers and B2B payments | Typed callback parsers + optional router helper |
