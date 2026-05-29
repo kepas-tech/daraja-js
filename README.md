@@ -191,6 +191,8 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 - `b2b.pay` + `b2b.transferFloat` + `parseB2bResult` — pay another business, and move float Working↔Utility (funds B2C).
 - `status.stkPush` (sync) + `status.transaction` (async) + `parseStatusResult` — query a transaction's outcome.
 - `reversal.request` + `parseReversalResult` + `isSettledByRecipientSpend` — reverse a transaction; classify the "recipient already spent it" case (gotcha #16).
+- `qr.generate` — dynamic QR codes (Pay Bill / Buy Goods / Send Money / etc.).
+- `pull.registerUrl` + `pull.query` — Pull Transaction API (Daraja 3.0) to backfill C2B payments missed when a callback failed (gotcha #10).
 - `generateSecurityCredential` — RSA-encrypt the initiator password for the initiator-authed APIs.
 - `balance.query` + `parseBalanceResult` / `parseAccountBalance` — query account balances, with the pipe-delimited parser (gotcha #6).
 - `webhooks.sign` / `constructEvent` / `constructEventAsync` — Stripe-compatible signing + verification (sync + edge).
@@ -198,9 +200,9 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 - The `DarajaError` hierarchy + `errorFromResult` (ResultCode classification).
 - OAuth token management (race-safe, 3599s TTL) and the HTTP transport.
 
-**On the [roadmap](./ROADMAP.md) (committed APIs, not yet shipped):**
+This now covers **every Daraja endpoint** a production PayBill uses — collection, disbursement, account management, reconciliation, and QR.
 
-`pullTransactions.register` / `query` · `qr.generate`.
+**On the [roadmap](./ROADMAP.md) (post-1.0):** Tax Remittance, B2C Topup, B2B Express Checkout, Ratiba (standing orders), and a pluggable Redis token cache.
 
 Full surface in the [API reference](./docs) (published with each release).
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.0
+
+### Minor Changes
+
+- Add QR and Pull Transactions — completing 100% parity with kepas-pay's Daraja
+  surface.
+
+  - `daraja.qr.generate({ accountReference, amount?, trxCode?, size? })` — dynamic
+    QR (success is ResponseCode "00"; TrxCode BG/WA/PB/SM/SB).
+  - `daraja.pull.registerUrl({ nominatedNumber, callbackUrl })` and
+    `daraja.pull.query({ startDate, endDate, offset? })` — Pull Transaction API
+    (Daraja 3.0) to backfill C2B payments missed when a callback failed. Handles
+    the gotcha-#10 quirks: no `/mpesa/` prefix, NominatedNumber as MSISDN,
+    OffSetValue as a number.
+
 ## 0.6.0
 
 ### Minor Changes

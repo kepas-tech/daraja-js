@@ -69,6 +69,15 @@ export {
   type RegisterUrlsInput,
   type RegisterUrlsResult,
 } from './resources/c2b.js';
+// Pull Transactions — recon backfill (Daraja 3.0)
+export type {
+  PullQueryInput,
+  PullQueryResult,
+  PullRegisterInput,
+  PullRegisterResult,
+} from './resources/pull.js';
+// QR — dynamic QR generation
+export type { QrGenerateInput, QrGenerateResult, QrTrxCode } from './resources/qr.js';
 // Reversal — request + result parsing + recipient-spend classifier
 export {
   isSettledByRecipientSpend,

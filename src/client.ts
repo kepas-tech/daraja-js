@@ -21,6 +21,19 @@ import {
 } from './resources/balance.js';
 import { type RegisterUrlsInput, type RegisterUrlsResult, registerUrls } from './resources/c2b.js';
 import {
+  type PullQueryInput,
+  type PullQueryResult,
+  type PullRegisterInput,
+  type PullRegisterResult,
+  query as pullQuery,
+  registerUrl as pullRegisterUrl,
+} from './resources/pull.js';
+import {
+  type QrGenerateInput,
+  type QrGenerateResult,
+  generate as qrGenerate,
+} from './resources/qr.js';
+import {
   type ReversalAck,
   type ReversalInput,
   request as reversalRequest,
@@ -103,6 +116,17 @@ export class Daraja {
     request: (input: ReversalInput) => Promise<ReversalAck>;
   };
 
+  /** Dynamic QR code generation. */
+  readonly qr: {
+    generate: (input: QrGenerateInput) => Promise<QrGenerateResult>;
+  };
+
+  /** Pull Transaction API — backfill missed C2B payments (Daraja 3.0). */
+  readonly pull: {
+    registerUrl: (input: PullRegisterInput) => Promise<PullRegisterResult>;
+    query: (input: PullQueryInput) => Promise<PullQueryResult>;
+  };
+
   constructor(config: DarajaConfig) {
     validateConfig(config);
     this.config = config;
@@ -140,6 +164,13 @@ export class Daraja {
     };
     this.reversal = {
       request: (input) => reversalRequest(this.http, this.config, input),
+    };
+    this.qr = {
+      generate: (input) => qrGenerate(this.http, this.config, input),
+    };
+    this.pull = {
+      registerUrl: (input) => pullRegisterUrl(this.http, this.config, input),
+      query: (input) => pullQuery(this.http, this.config, input),
     };
   }
 }
