@@ -189,6 +189,7 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 - `c2b.registerUrls` + `parseC2bConfirmation` / `parseC2bValidation` + `c2bAccept` / `c2bReject` — capture direct PayBill/Till payments (confirmation is terminal — gotcha #8).
 - `b2c.send` + `parseB2cResult` — disburse to a customer phone (money out; Utility account — gotcha #7).
 - `generateSecurityCredential` — RSA-encrypt the initiator password for the initiator-authed APIs.
+- `balance.query` + `parseBalanceResult` / `parseAccountBalance` — query account balances, with the pipe-delimited parser (gotcha #6).
 - `webhooks.sign` / `constructEvent` / `constructEventAsync` — Stripe-compatible signing + verification (sync + edge).
 - The phone / amount / timestamp / password primitives (`normalizePhone`, `phoneToNumber`, `makeTimestamp`, `generatePassword`, `validateAmount`).
 - The `DarajaError` hierarchy + `errorFromResult` (ResultCode classification).
@@ -196,7 +197,7 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 
 **On the [roadmap](./ROADMAP.md) (committed APIs, not yet shipped):**
 
-`b2b.pay` / float transfers · `balance.query` · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate`.
+`b2b.pay` / float transfers · `transaction.status` · `reversal.request` + `isSettledByRecipientSpend()` · `pullTransactions.register` / `query` · `qr.generate`.
 
 Full surface in the [API reference](./docs) (published with each release).
 

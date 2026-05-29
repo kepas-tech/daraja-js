@@ -39,6 +39,15 @@ export {
   type B2cSendResult,
   parseB2cResult,
 } from './resources/b2c.js';
+// Balance — query + pipe-delimited parser (gotcha #6)
+export {
+  type AccountBalanceEntry,
+  type BalanceQueryInput,
+  type BalanceQueryResult,
+  type BalanceResult,
+  parseAccountBalance,
+  parseBalanceResult,
+} from './resources/balance.js';
 // C2B — registration + callback parsing + validation responses
 export {
   type C2bConfirmation,

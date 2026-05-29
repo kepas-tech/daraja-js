@@ -7,6 +7,11 @@ import { TokenManager, type TokenResponse } from './auth.js';
 import { DarajaAuthError, DarajaValidationError } from './errors.js';
 import { HttpClient } from './http.js';
 import { type B2cSendInput, type B2cSendResult, send as b2cSend } from './resources/b2c.js';
+import {
+  type BalanceQueryInput,
+  type BalanceQueryResult,
+  query as balanceQuery,
+} from './resources/balance.js';
 import { type RegisterUrlsInput, type RegisterUrlsResult, registerUrls } from './resources/c2b.js';
 import { type StkPushInput, type StkPushResult, stkPush } from './resources/stk-push.js';
 
@@ -56,6 +61,11 @@ export class Daraja {
     send: (input: B2cSendInput) => Promise<B2cSendResult>;
   };
 
+  /** Account balance query (read-only). */
+  readonly balance: {
+    query: (input: BalanceQueryInput) => Promise<BalanceQueryResult>;
+  };
+
   constructor(config: DarajaConfig) {
     validateConfig(config);
     this.config = config;
@@ -79,6 +89,9 @@ export class Daraja {
     };
     this.b2c = {
       send: (input) => b2cSend(this.http, this.config, input),
+    };
+    this.balance = {
+      query: (input) => balanceQuery(this.http, this.config, input),
     };
   }
 }

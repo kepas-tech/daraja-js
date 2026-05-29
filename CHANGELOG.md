@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- Add Account Balance (read-only).
+
+  - `daraja.balance.query({ resultUrl, queueTimeoutUrl, remarks? })` — POST
+    /mpesa/accountbalance/v1/query with the AccountBalance command; returns the
+    async ack. Requires initiator auth.
+  - `parseBalanceResult` — parse the async result envelope.
+  - `parseAccountBalance` — the standalone pipe-delimited parser (gotcha #6):
+    `Account|Currency|Current|Available|Reserved|Uncleared`, accounts joined by `&`.
+
 ## 0.3.0
 
 ### Minor Changes
