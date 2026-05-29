@@ -1,6 +1,6 @@
 {
-  "_comment": "Proof record for the result-code catalog. Each code below was OBSERVED in real Safaricom responses in kepas-pay production (the `desc` is Safaricom's own verbatim text). This is the evidence behind the `kepas-db` proof tags in result-codes.ts. Deliberately carries NO production volumes, table/schema names, dates, or identifiers — only (scope, code, Safaricom's description). Community/blog sources are excluded by policy.",
-  "source": "observed in kepas-pay production responses",
+  "_comment": "Proof record for the result-code catalog. Each code below was OBSERVED in real Safaricom production responses (the `desc` is Safaricom's own verbatim text). This is the evidence behind the `production-observed` proof tags in result-codes.ts. Deliberately carries NO production volumes, table/schema names, dates, or identifiers — only (scope, code, Safaricom's description). Community/blog sources are excluded by policy.",
+  "source": "seen in real Safaricom production responses",
   "observations": [
     { "scope": "stk", "code": "0", "desc": "The service request is processed successfully." },
     { "scope": "stk", "code": "1037", "desc": "DS timeout user cannot be reached." },

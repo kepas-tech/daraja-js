@@ -1,10 +1,10 @@
 # Daraja result/response codes — proven catalog
 
 > **How to read this.** Every code below is **proven** from one of: real Safaricom
-> responses observed in production (`kepas-db` — the meaning IS Safaricom's own
-> `ResultDesc` text), this SDK's own code (`sdk-code`), kepas-pay's production
-> handlers (`kepas-prod`), or official Safaricom docs (`safaricom-docs`).
-> Community blogs are **not** a source.
+> responses observed in production (`production-observed` — the meaning IS
+> Safaricom's own `ResultDesc` text), this SDK's own code (`sdk-code`), a
+> production integration's handlers (`production-code`), or official Safaricom
+> docs (`safaricom-docs`). Community blogs are **not** a source.
 >
 > **This is not exhaustive — and cannot be.** Safaricom does not publish a complete
 > error-code reference; codes arrive inline with each response. Any code NOT listed
@@ -21,10 +21,10 @@
 
 | Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
 |------|------|---------|---------|-----------|----------|-----------|-------|
-| `0` | resultCode | ✅ | Payment received. | no | yes | — | kepas-db |
-| `1` | resultCode | — | The customer has insufficient M-Pesa balance (and no Fuliza). Ask them to top up and retry. | yes | no | DarajaInsufficientFundsError | kepas-prod, sdk-code |
-| `1032` | resultCode | — | The customer dismissed the STK prompt. | yes | no | DarajaCancelledError | kepas-db |
-| `1037` | resultCode | — | The customer didn't respond to the STK prompt within ~60s — phone off, out of network, or prompt ignored. Ask them to retry. | yes | no | DarajaUserUnreachableError | kepas-db |
+| `0` | resultCode | ✅ | Payment received. | no | yes | — | production-observed |
+| `1` | resultCode | — | The customer has insufficient M-Pesa balance (and no Fuliza). Ask them to top up and retry. | yes | no | DarajaInsufficientFundsError | production-code, sdk-code |
+| `1032` | resultCode | — | The customer dismissed the STK prompt. | yes | no | DarajaCancelledError | production-observed |
+| `1037` | resultCode | — | The customer didn't respond to the STK prompt within ~60s — phone off, out of network, or prompt ignored. Ask them to retry. | yes | no | DarajaUserUnreachableError | production-observed |
 
 ## C2B (`c2b`)
 
@@ -40,37 +40,37 @@
 
 | Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
 |------|------|---------|---------|-----------|----------|-----------|-------|
-| `0` | resultCode | ✅ | Payout completed. | no | yes | — | kepas-db |
-| `1` | resultCode | — | Your Utility (B2C) account has insufficient funds. Top it up (B2B transfer Working→Utility) and retry. | yes | no | DarajaInsufficientFundsError | kepas-db |
-| `2` | resultCode | — | Amount is below M-Pesa’s minimum for this payout. Increase the amount. | no | no | DarajaAPIError | kepas-db |
+| `0` | resultCode | ✅ | Payout completed. | no | yes | — | production-observed |
+| `1` | resultCode | — | Your Utility (B2C) account has insufficient funds. Top it up (B2B transfer Working→Utility) and retry. | yes | no | DarajaInsufficientFundsError | production-observed |
+| `2` | resultCode | — | Amount is below M-Pesa’s minimum for this payout. Increase the amount. | no | no | DarajaAPIError | production-observed |
 
 ## B2B + float transfers (`b2b`)
 
 | Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
 |------|------|---------|---------|-----------|----------|-----------|-------|
-| `0` | resultCode | ✅ | Transfer completed. | no | yes | — | kepas-db |
-| `1` | resultCode | — | The sending (Working) account has insufficient funds. Fund it and retry. | yes | no | DarajaInsufficientFundsError | kepas-db |
-| `21` | resultCode | — | The initiator is not permitted to perform this B2B/float operation. Check the initiator name + its role/permissions on the M-Pesa org portal. | no | no | DarajaAPIError | kepas-db |
-| `SFC_IC0003` | resultCode | — | The receiver is invalid — wrong destination shortcode, or wrong ReceiverIdentifierType for the CommandID (PayBill=4, BuyGoods=2). | no | no | DarajaAPIError | kepas-db |
+| `0` | resultCode | ✅ | Transfer completed. | no | yes | — | production-observed |
+| `1` | resultCode | — | The sending (Working) account has insufficient funds. Fund it and retry. | yes | no | DarajaInsufficientFundsError | production-observed |
+| `21` | resultCode | — | The initiator is not permitted to perform this B2B/float operation. Check the initiator name + its role/permissions on the M-Pesa org portal. | no | no | DarajaAPIError | production-observed |
+| `SFC_IC0003` | resultCode | — | The receiver is invalid — wrong destination shortcode, or wrong ReceiverIdentifierType for the CommandID (PayBill=4, BuyGoods=2). | no | no | DarajaAPIError | production-observed |
 
 ## Account Balance (`balance`)
 
 | Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
 |------|------|---------|---------|-----------|----------|-----------|-------|
-| `0` | resultCode | ✅ | Balance query completed. | no | yes | — | kepas-db |
+| `0` | resultCode | ✅ | Balance query completed. | no | yes | — | production-observed |
 
 ## Transaction Status (`status`)
 
 | Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
 |------|------|---------|---------|-----------|----------|-----------|-------|
-| `0` | resultCode | ✅ | Status query completed. | no | yes | — | kepas-db |
-| `25` | resultCode | — | Daraja rejected the status query — a required parameter was missing or malformed (commonly the transaction id or IdentifierType). Check the query inputs. | no | no | DarajaAPIError | kepas-db |
+| `0` | resultCode | ✅ | Status query completed. | no | yes | — | production-observed |
+| `25` | resultCode | — | Daraja rejected the status query — a required parameter was missing or malformed (commonly the transaction id or IdentifierType). Check the query inputs. | no | no | DarajaAPIError | production-observed |
 
 ## Reversal (`reversal`)
 
 | Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
 |------|------|---------|---------|-----------|----------|-----------|-------|
-| `0` | resultCode | ✅ | Reversal completed. | no | yes | — | kepas-db |
+| `0` | resultCode | ✅ | Reversal completed. | no | yes | — | production-observed |
 
 ## Dynamic QR (`qr`)
 

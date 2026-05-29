@@ -22,10 +22,10 @@ const proofs = (p) => [...new Set(p.map((x) => x.kind))].join(', ');
 let md = `# Daraja result/response codes — proven catalog
 
 > **How to read this.** Every code below is **proven** from one of: real Safaricom
-> responses observed in production (\`kepas-db\` — the meaning IS Safaricom's own
-> \`ResultDesc\` text), this SDK's own code (\`sdk-code\`), kepas-pay's production
-> handlers (\`kepas-prod\`), or official Safaricom docs (\`safaricom-docs\`).
-> Community blogs are **not** a source.
+> responses observed in production (\`production-observed\` — the meaning IS
+> Safaricom's own \`ResultDesc\` text), this SDK's own code (\`sdk-code\`), a
+> production integration's handlers (\`production-code\`), or official Safaricom
+> docs (\`safaricom-docs\`). Community blogs are **not** a source.
 >
 > **This is not exhaustive — and cannot be.** Safaricom does not publish a complete
 > error-code reference; codes arrive inline with each response. Any code NOT listed

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1
+
+### Patch Changes
+
+- Rename catalog proof-source tags to neutral `production-observed` / `production-code`
+  (was `kepas-db` / `kepas-prod`). They were arbitrary provenance categories — not a
+  real database or container name — but the neutral labels avoid resembling any
+  infrastructure name in the published package. No behavior change.
+
 ## 1.1.0
 
 ### Minor Changes

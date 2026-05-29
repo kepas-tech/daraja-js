@@ -2,11 +2,11 @@
  * Proven Daraja result/response-code catalog.
  *
  * Every entry's meaning is grounded in EVIDENCE, never assumption:
- * - `kepas-db`   — observed in real Safaricom responses logged in kepas-pay
- *                  production (see result-codes.evidence.json).
- * - `kepas-prod` — handled in kepas-pay's production daraja.js / callback code.
- * - `sdk-code`   — checked by this SDK's own resource code.
- * - `safaricom-docs` — official Safaricom documentation.
+ * - `production-observed` — seen in real Safaricom responses in production
+ *                           (the meaning IS Safaricom's own ResultDesc text).
+ * - `production-code`     — handled in a production integration's code.
+ * - `sdk-code`            — checked by this SDK's own resource code.
+ * - `safaricom-docs`      — official Safaricom documentation.
  *
  * Community blogs / other SDKs are NOT a proof source. Codes we cannot prove
  * are deliberately ABSENT here — the SDK passes Safaricom's `ResultDesc` through
@@ -36,7 +36,7 @@ export type DarajaErrorClassName =
   | 'DarajaUserUnreachableError';
 
 export interface ProofRef {
-  kind: 'kepas-db' | 'kepas-prod' | 'sdk-code' | 'safaricom-docs';
+  kind: 'production-observed' | 'production-code' | 'sdk-code' | 'safaricom-docs';
   ref: string;
 }
 
@@ -98,12 +98,12 @@ export function applyClassification<T extends CodeClassificationFields>(
 // publishing production volumes/schema in an OSS package is needless disclosure.
 // `code` references this SDK's own public source, which is fine to cite.
 const db = (_internalRef?: string): ProofRef => ({
-  kind: 'kepas-db',
-  ref: 'observed in kepas-pay production responses',
+  kind: 'production-observed',
+  ref: 'seen in real Safaricom production responses',
 });
 const prod = (_internalRef?: string): ProofRef => ({
-  kind: 'kepas-prod',
-  ref: 'handled in kepas-pay production code',
+  kind: 'production-code',
+  ref: 'handled in a production integration',
 });
 const code = (ref: string): ProofRef => ({ kind: 'sdk-code', ref });
 
