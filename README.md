@@ -137,12 +137,21 @@ Webhook signatures use the Stripe-compatible scheme (`t=…,v1=…`, HMAC-SHA256
 
 Off by default. The SDK makes no network calls except to Safaricom.
 
+## Support this project 💛
+
+`daraja-js` is free and Apache 2.0. If it saved you an outage, you can fund its
+maintenance via M-Pesa — the same rail this SDK is built on:
+
+> **Pay Bill → Business no. `4052037` → Account no. `daraja` → amount → PIN.**
+
+Donations are voluntary and buy no support guarantees or roadmap influence.
+International card rails and full details in [DONATING.md](./DONATING.md).
+
 ## Community
 
 - [Discussions](https://github.com/nellylemmy/daraja-js/discussions) — questions, ideas, RFCs
 - [Issues](https://github.com/nellylemmy/daraja-js/issues) — bugs + features
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — DCO sign-off required (`git commit -s`)
-- [DONATING.md](./DONATING.md) — fund maintenance via M-Pesa PayBill `4052037`, account `daraja`
 
 ## License
 
