@@ -2,9 +2,8 @@
 
 > Type-safe Node.js / TypeScript SDK for Safaricom Daraja (M-Pesa). It encodes the production gotchas that silently break real PayBills — so you don't rediscover them in your own outage.
 
-<!-- badges: npm, build, coverage, license, types — wired in CI step, placeholders until first release -->
-[![npm](https://img.shields.io/badge/npm-unpublished-lightgrey.svg)](https://www.npmjs.com/package/@kepas/daraja-js)
-[![CI](https://img.shields.io/badge/CI-pending-lightgrey.svg)](https://github.com/nellylemmy/daraja-js/actions)
+[![npm](https://img.shields.io/npm/v/@kepas/daraja-js.svg)](https://www.npmjs.com/package/@kepas/daraja-js)
+[![CI](https://github.com/nellylemmy/daraja-js/actions/workflows/ci.yml/badge.svg)](https://github.com/nellylemmy/daraja-js/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 [![Types](https://img.shields.io/badge/types-included-blue.svg)](#typescript)
 
