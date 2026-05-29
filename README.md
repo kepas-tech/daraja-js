@@ -129,6 +129,7 @@ Off by default. The SDK makes no network calls except to Safaricom.
 - [Discussions](https://github.com/nellylemmy/daraja-js/discussions) — questions, ideas, RFCs
 - [Issues](https://github.com/nellylemmy/daraja-js/issues) — bugs + features
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — DCO sign-off required (`git commit -s`)
+- [DONATING.md](./DONATING.md) — fund maintenance via M-Pesa PayBill `4052037`, account `daraja`
 
 ## License
 

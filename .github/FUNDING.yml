@@ -1,3 +1,3 @@
-github: [nellylemmy]
-open_collective: daraja-js
-polar: daraja-js
+# M-Pesa PayBill is the only live channel today (see DONATING.md).
+# Re-add github/open_collective/polar once those accounts exist.
+custom: ["https://github.com/nellylemmy/daraja-js/blob/main/DONATING.md"]
