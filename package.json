@@ -54,7 +54,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "valibot": "^0.42.1"
+    "valibot": "^1.4.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
