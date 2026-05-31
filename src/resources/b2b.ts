@@ -43,6 +43,27 @@ export interface FloatTransferInput {
   queueTimeoutUrl: string;
 }
 
+export interface B2bTopUpInput {
+  /** Destination B2C shortcode (PartyB) whose Utility account is loaded. */
+  toShortcode: string;
+  amount: number;
+  /** Optional consumer MSISDN on whose behalf you pay. */
+  requester?: string;
+  accountReference?: string;
+  remarks?: string;
+  resultUrl: string;
+  queueTimeoutUrl: string;
+}
+
+export interface RemitTaxInput {
+  amount: number;
+  /** KRA-issued Payment Registration Number (PRN). Sent as AccountReference. */
+  prn: string;
+  remarks?: string;
+  resultUrl: string;
+  queueTimeoutUrl: string;
+}
+
 export interface B2bAck {
   conversationId: string;
   originatorConversationId: string;
@@ -58,6 +79,10 @@ interface AckRaw {
 }
 
 const ENDPOINT = '/mpesa/b2b/v1/paymentrequest';
+/** Tax Remittance has its own path; everything else shares ENDPOINT. */
+const REMITTAX_ENDPOINT = '/mpesa/b2b/v1/remittax';
+/** KRA tax-collector shortcode — the only allowed PartyB for PayTaxToKRA. */
+const KRA_SHORTCODE = 572572;
 
 function requireInitiator(config: B2bConfig): { initiator: string; securityCredential: string } {
   if (!config.initiator || !config.securityCredential) {
@@ -66,8 +91,12 @@ function requireInitiator(config: B2bConfig): { initiator: string; securityCrede
   return { initiator: config.initiator, securityCredential: config.securityCredential };
 }
 
-async function post(http: HttpClient, body: Record<string, unknown>): Promise<B2bAck> {
-  const raw = await http.post<AckRaw>(ENDPOINT, body);
+async function post(
+  http: HttpClient,
+  body: Record<string, unknown>,
+  endpoint: string = ENDPOINT,
+): Promise<B2bAck> {
+  const raw = await http.post<AckRaw>(endpoint, body);
   if (raw.ResponseCode !== '0') {
     throw errorFromResponse({
       scope: 'b2b',
@@ -137,6 +166,72 @@ export async function transferFloat(
     QueueTimeOutURL: input.queueTimeoutUrl,
     ResultURL: input.resultUrl,
   });
+}
+
+/**
+ * B2C Account Top Up — load a B2C shortcode's Utility account for disbursement
+ * (`BusinessPayToBulk`). Same endpoint as `pay`; initiator needs the
+ * "Org Business Pay to Bulk API" role. Moves real money.
+ */
+export async function topUp(
+  http: HttpClient,
+  config: B2bConfig,
+  input: B2bTopUpInput,
+): Promise<B2bAck> {
+  const { initiator, securityCredential } = requireInitiator(config);
+  const amount = validateAmount(input.amount);
+  const own = Number(config.shortcode);
+  const body: Record<string, unknown> = {
+    Initiator: initiator,
+    SecurityCredential: securityCredential,
+    CommandID: 'BusinessPayToBulk',
+    SenderIdentifierType: '4',
+    RecieverIdentifierType: '4',
+    Amount: amount,
+    PartyA: own,
+    PartyB: Number(input.toShortcode),
+    AccountReference: (input.accountReference || String(input.toShortcode)).slice(0, 32),
+    Remarks: (input.remarks ?? 'Top up').slice(0, 100),
+    QueueTimeOutURL: input.queueTimeoutUrl,
+    ResultURL: input.resultUrl,
+  };
+  if (input.requester) {
+    body.Requester = input.requester;
+  }
+  return post(http, body);
+}
+
+/**
+ * Tax Remittance — pay tax to KRA (`PayTaxToKRA`, PartyB fixed to 572572).
+ * `prn` is the KRA-issued Payment Registration Number. Requires prior KRA
+ * integration and the Tax-Remittance initiator role. Moves real money.
+ */
+export async function remitTax(
+  http: HttpClient,
+  config: B2bConfig,
+  input: RemitTaxInput,
+): Promise<B2bAck> {
+  const { initiator, securityCredential } = requireInitiator(config);
+  const amount = validateAmount(input.amount);
+  const own = Number(config.shortcode);
+  return post(
+    http,
+    {
+      Initiator: initiator,
+      SecurityCredential: securityCredential,
+      CommandID: 'PayTaxToKRA',
+      SenderIdentifierType: '4',
+      RecieverIdentifierType: '4',
+      Amount: amount,
+      PartyA: own,
+      PartyB: KRA_SHORTCODE,
+      AccountReference: input.prn,
+      Remarks: (input.remarks ?? 'Tax remittance').slice(0, 100),
+      QueueTimeOutURL: input.queueTimeoutUrl,
+      ResultURL: input.resultUrl,
+    },
+    REMITTAX_ENDPOINT,
+  );
 }
 
 export interface B2bResult extends CodeClassificationFields {

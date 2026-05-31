@@ -61,7 +61,7 @@ export class HttpClient {
   async post<T = unknown>(
     path: string,
     body: unknown,
-    opts: { retryable?: boolean } = {},
+    opts: { retryable?: boolean; headers?: Record<string, string> } = {},
   ): Promise<T> {
     let lastError: unknown;
     for (let attempt = 0; attempt <= this.maxRetries; attempt += 1) {
@@ -69,7 +69,7 @@ export class HttpClient {
         await this.sleep(200 * 2 ** (attempt - 1));
       }
       try {
-        return await this.attempt<T>(path, body);
+        return await this.attempt<T>(path, body, opts.headers);
       } catch (err) {
         lastError = err;
         if (!opts.retryable || !isRetryable(err)) {
@@ -80,7 +80,11 @@ export class HttpClient {
     throw lastError;
   }
 
-  private async attempt<T>(path: string, body: unknown): Promise<T> {
+  private async attempt<T>(
+    path: string,
+    body: unknown,
+    extraHeaders?: Record<string, string>,
+  ): Promise<T> {
     const token = await this.getToken();
     const fetchFn = this.fetchImpl ?? globalThis.fetch;
     const controller = new AbortController();
@@ -91,6 +95,9 @@ export class HttpClient {
       res = await fetchFn(`${this.baseUrl}${path}`, {
         method: 'POST',
         headers: {
+          // Caller-supplied first, then fixed headers win — a per-call header
+          // (e.g. Bill Manager `app_key`) can never clobber auth/content-type.
+          ...extraHeaders,
           'content-type': 'application/json',
           accept: 'application/json',
           authorization: `Bearer ${token}`,

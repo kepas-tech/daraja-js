@@ -9,17 +9,62 @@ import { HttpClient } from './http.js';
 import {
   type B2bAck,
   type B2bPayInput,
+  type B2bTopUpInput,
   pay as b2bPay,
+  remitTax as b2bRemitTax,
+  topUp as b2bTopUp,
   transferFloat as b2bTransferFloat,
   type FloatTransferInput,
+  type RemitTaxInput,
 } from './resources/b2b.js';
-import { type B2cSendInput, type B2cSendResult, send as b2cSend } from './resources/b2c.js';
+import {
+  type ExpressCheckoutAck,
+  type ExpressCheckoutInput,
+  checkout as expressCheckout,
+} from './resources/b2b-express.js';
+import {
+  type B2cSendInput,
+  type B2cSendResult,
+  type B2cToPochiInput,
+  send as b2cSend,
+  toPochi as b2cToPochi,
+} from './resources/b2c.js';
 import {
   type BalanceQueryInput,
   type BalanceQueryResult,
   query as balanceQuery,
 } from './resources/balance.js';
+import {
+  type AcknowledgePaymentInput,
+  type BillManagerOptInInput,
+  type BillManagerOptInResult,
+  type BillManagerResult,
+  acknowledgePayment as bmAcknowledgePayment,
+  cancelBulkInvoices as bmCancelBulkInvoices,
+  cancelInvoice as bmCancelInvoice,
+  optIn as bmOptIn,
+  sendBulkInvoices as bmSendBulkInvoices,
+  sendInvoice as bmSendInvoice,
+  updateOptIn as bmUpdateOptIn,
+  type CancelBulkInvoicesInput,
+  type CancelInvoiceInput,
+  type SendBulkInvoicesInput,
+  type SendInvoiceInput,
+} from './resources/bill-manager.js';
+import {
+  calculatePoints as bongaCalculatePoints,
+  redeem as bongaRedeem,
+  type CalculatePointsInput,
+  type CalculatePointsResult,
+  type RedeemAck,
+  type RedeemInput,
+} from './resources/bonga.js';
 import { type RegisterUrlsInput, type RegisterUrlsResult, registerUrls } from './resources/c2b.js';
+import {
+  type OrgInfoQueryInput,
+  type OrgInfoResult,
+  query as orgInfoQuery,
+} from './resources/org-info.js';
 import {
   type PullQueryInput,
   type PullQueryResult,
@@ -33,6 +78,11 @@ import {
   type QrGenerateResult,
   generate as qrGenerate,
 } from './resources/qr.js';
+import {
+  type RatibaAck,
+  type RatibaCreateInput,
+  create as ratibaCreate,
+} from './resources/ratiba.js';
 import {
   type ReversalAck,
   type ReversalInput,
@@ -64,6 +114,8 @@ export interface DarajaConfig {
   securityCredential?: string;
   /** Retries on 5xx. Default 2. */
   maxNetworkRetries?: number;
+  /** Bill Manager `app_key` (from `billManager.optIn`) — fallback for invoicing calls. */
+  billManagerAppKey?: string;
   /** Cross-process OAuth token cache (e.g. Redis). Defaults to per-process. */
   tokenStore?: TokenStore;
   /** `fetch` override, for tests or custom runtimes. */
@@ -91,9 +143,10 @@ export class Daraja {
     registerUrls: (input: RegisterUrlsInput) => Promise<RegisterUrlsResult>;
   };
 
-  /** B2C — disburse money to a customer phone (money out). */
+  /** B2C — disburse money to a customer phone, or to a business wallet (pochi). */
   readonly b2c: {
     send: (input: B2cSendInput) => Promise<B2cSendResult>;
+    toPochi: (input: B2cToPochiInput) => Promise<B2cSendResult>;
   };
 
   /** Account balance query (read-only). */
@@ -101,10 +154,12 @@ export class Daraja {
     query: (input: BalanceQueryInput) => Promise<BalanceQueryResult>;
   };
 
-  /** B2B — pay another business, or move float between Working↔Utility. */
+  /** B2B — pay another business, move float, top up a B2C shortcode, or remit tax. */
   readonly b2b: {
     pay: (input: B2bPayInput) => Promise<B2bAck>;
     transferFloat: (input: FloatTransferInput) => Promise<B2bAck>;
+    topUp: (input: B2bTopUpInput) => Promise<B2bAck>;
+    remitTax: (input: RemitTaxInput) => Promise<B2bAck>;
   };
 
   /** Transaction status — STK Push (sync) and any transaction (async). */
@@ -127,6 +182,38 @@ export class Daraja {
   readonly pull: {
     registerUrl: (input: PullRegisterInput) => Promise<PullRegisterResult>;
     query: (input: PullQueryInput) => Promise<PullQueryResult>;
+  };
+
+  /** M-Pesa Ratiba — create a customer standing order (recurring collection). */
+  readonly ratiba: {
+    create: (input: RatibaCreateInput) => Promise<RatibaAck>;
+  };
+
+  /** B2B Express Checkout — USSD push to a merchant's till to pay a vendor paybill. */
+  readonly express: {
+    checkout: (input: ExpressCheckoutInput) => Promise<ExpressCheckoutAck>;
+  };
+
+  /** Query Organization Info — validate a shortcode's name + tariff (read-only). */
+  readonly orgInfo: {
+    query: (input: OrgInfoQueryInput) => Promise<OrgInfoResult>;
+  };
+
+  /** Lipa na Bonga — points→KES conversion (read) + redeem points as payment. */
+  readonly bonga: {
+    calculatePoints: (input: CalculatePointsInput) => Promise<CalculatePointsResult>;
+    redeem: (input: RedeemInput) => Promise<RedeemAck>;
+  };
+
+  /** Bill Manager — invoicing + reconciliation (rescode "200", `app_key` header). */
+  readonly billManager: {
+    optIn: (input: BillManagerOptInInput) => Promise<BillManagerOptInResult>;
+    updateOptIn: (input: BillManagerOptInInput) => Promise<BillManagerResult>;
+    sendInvoice: (input: SendInvoiceInput) => Promise<BillManagerResult>;
+    sendBulkInvoices: (input: SendBulkInvoicesInput) => Promise<BillManagerResult>;
+    cancelInvoice: (input: CancelInvoiceInput) => Promise<BillManagerResult>;
+    cancelBulkInvoices: (input: CancelBulkInvoicesInput) => Promise<BillManagerResult>;
+    acknowledgePayment: (input: AcknowledgePaymentInput) => Promise<BillManagerResult>;
   };
 
   constructor(config: DarajaConfig) {
@@ -154,6 +241,7 @@ export class Daraja {
     };
     this.b2c = {
       send: (input) => b2cSend(this.http, this.config, input),
+      toPochi: (input) => b2cToPochi(this.http, this.config, input),
     };
     this.balance = {
       query: (input) => balanceQuery(this.http, this.config, input),
@@ -161,6 +249,8 @@ export class Daraja {
     this.b2b = {
       pay: (input) => b2bPay(this.http, this.config, input),
       transferFloat: (input) => b2bTransferFloat(this.http, this.config, input),
+      topUp: (input) => b2bTopUp(this.http, this.config, input),
+      remitTax: (input) => b2bRemitTax(this.http, this.config, input),
     };
     this.status = {
       stkPush: (input) => statusStkPush(this.http, this.config, input),
@@ -175,6 +265,28 @@ export class Daraja {
     this.pull = {
       registerUrl: (input) => pullRegisterUrl(this.http, this.config, input),
       query: (input) => pullQuery(this.http, this.config, input),
+    };
+    this.ratiba = {
+      create: (input) => ratibaCreate(this.http, this.config, input),
+    };
+    this.express = {
+      checkout: (input) => expressCheckout(this.http, input),
+    };
+    this.orgInfo = {
+      query: (input) => orgInfoQuery(this.http, input),
+    };
+    this.bonga = {
+      calculatePoints: (input) => bongaCalculatePoints(this.http, input),
+      redeem: (input) => bongaRedeem(this.http, this.config, input),
+    };
+    this.billManager = {
+      optIn: (input) => bmOptIn(this.http, this.config, input),
+      updateOptIn: (input) => bmUpdateOptIn(this.http, this.config, input),
+      sendInvoice: (input) => bmSendInvoice(this.http, this.config, input),
+      sendBulkInvoices: (input) => bmSendBulkInvoices(this.http, this.config, input),
+      cancelInvoice: (input) => bmCancelInvoice(this.http, this.config, input),
+      cancelBulkInvoices: (input) => bmCancelBulkInvoices(this.http, this.config, input),
+      acknowledgePayment: (input) => bmAcknowledgePayment(this.http, this.config, input),
     };
   }
 }

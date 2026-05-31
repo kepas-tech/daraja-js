@@ -148,6 +148,87 @@ describe('b2b guards', () => {
   });
 });
 
+describe('b2b.topUp', () => {
+  it('loads a B2C shortcode (BusinessPayToBulk, both identifiers 4, optional Requester)', async () => {
+    mockOAuth();
+    const ref = captureBody();
+    const res = await makeDaraja().b2b.topUp({
+      toShortcode: '600000',
+      amount: 239,
+      requester: '254708374149',
+      accountReference: 'TOP1',
+      resultUrl: 'https://example.com/r',
+      queueTimeoutUrl: 'https://example.com/t',
+    });
+    expect(ref.body.CommandID).toBe('BusinessPayToBulk');
+    expect(ref.body.SenderIdentifierType).toBe('4');
+    expect(ref.body.RecieverIdentifierType).toBe('4'); // Daraja's misspelling
+    expect(ref.body.PartyA).toBe(600999);
+    expect(ref.body.PartyB).toBe(600000);
+    expect(ref.body.Amount).toBe(239);
+    expect(ref.body.Requester).toBe('254708374149');
+    expect(ref.body.AccountReference).toBe('TOP1');
+    expect(res.responseCode).toBe('0');
+  });
+
+  it('omits Requester when not supplied', async () => {
+    mockOAuth();
+    const ref = captureBody();
+    await makeDaraja().b2b.topUp({
+      toShortcode: '600000',
+      amount: 10,
+      resultUrl: 'https://example.com/r',
+      queueTimeoutUrl: 'https://example.com/t',
+    });
+    expect('Requester' in ref.body).toBe(false);
+  });
+});
+
+describe('b2b.remitTax', () => {
+  const REMITTAX = `${SANDBOX}/mpesa/b2b/v1/remittax`;
+
+  function captureRemitTax() {
+    const ref: { body: Record<string, unknown> } = { body: {} };
+    server.use(
+      http.post(REMITTAX, async ({ request }) => {
+        ref.body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(ACCEPTED);
+      }),
+    );
+    return ref;
+  }
+
+  it('remits tax to KRA (PayTaxToKRA, PartyB 572572, AccountReference = PRN)', async () => {
+    mockOAuth();
+    const ref = captureRemitTax();
+    const res = await makeDaraja().b2b.remitTax({
+      amount: 239,
+      prn: 'PRN1234XN',
+      resultUrl: 'https://example.com/r',
+      queueTimeoutUrl: 'https://example.com/t',
+    });
+    expect(ref.body.CommandID).toBe('PayTaxToKRA');
+    expect(ref.body.SenderIdentifierType).toBe('4');
+    expect(ref.body.RecieverIdentifierType).toBe('4');
+    expect(ref.body.PartyA).toBe(600999);
+    expect(ref.body.PartyB).toBe(572572);
+    expect(ref.body.AccountReference).toBe('PRN1234XN');
+    expect(ref.body.Amount).toBe(239);
+    expect(res.responseCode).toBe('0');
+  });
+
+  it('throws DarajaValidationError without an initiator', async () => {
+    await expect(
+      makeDaraja({ initiator: undefined, securityCredential: undefined }).b2b.remitTax({
+        amount: 1,
+        prn: 'PRN1',
+        resultUrl: 'https://example.com/r',
+        queueTimeoutUrl: 'https://example.com/t',
+      }),
+    ).rejects.toBeInstanceOf(DarajaValidationError);
+  });
+});
+
 describe('parseB2bResult', () => {
   it('parses a successful B2B result', () => {
     const r = parseB2bResult({

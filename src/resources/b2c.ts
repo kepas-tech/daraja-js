@@ -8,6 +8,7 @@
  * at your `resultUrl`, parsed with `parseB2cResult`.
  */
 
+import { randomUUID } from 'node:crypto';
 import type { DarajaConfig } from '../client.js';
 import { DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
@@ -82,6 +83,64 @@ export async function send(
     });
   }
 
+  return {
+    conversationId: raw.ConversationID ?? '',
+    originatorConversationId: raw.OriginatorConversationID ?? '',
+    responseCode: raw.ResponseCode,
+    responseDescription: raw.ResponseDescription ?? '',
+  };
+}
+
+const POCHI_ENDPOINT = '/mpesa/b2pochi/v1/paymentrequest';
+
+export interface B2cToPochiInput {
+  /** Customer MSISDN (2547…) — the business-wallet (pochi) recipient. */
+  phone: string;
+  amount: number;
+  resultUrl: string;
+  queueTimeoutUrl: string;
+  /** Dedupe id (double-disbursement guard). Generated (UUID) if omitted. */
+  originatorConversationId?: string;
+  remarks?: string;
+  occasion?: string;
+}
+
+/**
+ * Business To Pochi — pay a customer's business wallet (pochi la biashara).
+ * A B2C variant: own endpoint + `BusinessPayToPochi`, but reuses B2C auth, the
+ * `ResponseCode "0"` ack, and `parseB2cResult`. Initiator-authed. Moves real money.
+ */
+export async function toPochi(
+  http: HttpClient,
+  config: B2cConfig,
+  input: B2cToPochiInput,
+): Promise<B2cSendResult> {
+  if (!config.initiator || !config.securityCredential) {
+    throw new DarajaValidationError('b2c requires config.initiator and config.securityCredential');
+  }
+  const partyB = phoneToNumber(input.phone);
+  const amount = validateAmount(input.amount);
+  const raw = await http.post<B2cRaw>(POCHI_ENDPOINT, {
+    OriginatorConversationID: input.originatorConversationId ?? randomUUID(),
+    InitiatorName: config.initiator,
+    SecurityCredential: config.securityCredential,
+    CommandID: 'BusinessPayToPochi',
+    Amount: amount,
+    PartyA: Number(config.shortcode),
+    PartyB: partyB,
+    Remarks: (input.remarks ?? 'Payment').slice(0, 100),
+    QueueTimeOutURL: input.queueTimeoutUrl,
+    ResultURL: input.resultUrl,
+    Occassion: (input.occasion ?? '').slice(0, 100), // Safaricom's misspelling — sent exactly
+  });
+  if (raw.ResponseCode !== '0') {
+    throw errorFromResponse({
+      scope: 'b2c',
+      responseCode: raw.ResponseCode,
+      errorMessage: raw.ResponseDescription,
+      raw,
+    });
+  }
   return {
     conversationId: raw.ConversationID ?? '',
     originatorConversationId: raw.OriginatorConversationID ?? '',

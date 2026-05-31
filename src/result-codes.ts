@@ -24,7 +24,11 @@ export type DarajaScope =
   | 'balance'
   | 'c2b'
   | 'qr'
-  | 'pull';
+  | 'pull'
+  | 'billmanager'
+  | 'ratiba'
+  | 'b2bexpress'
+  | 'bonga';
 
 export type CodeType = 'responseCode' | 'resultCode' | 'c2bReply' | 'pullStatus';
 
@@ -329,6 +333,174 @@ export const CATALOG: readonly CatalogEntry[] = [
     retriable: false,
     terminal: true,
     proof: [code('pull.ts accepts 1000/1001')],
+  },
+
+  // ── Bill Manager (sync rescode — string, NOT ResponseCode "0") ───────────
+  {
+    scope: 'billmanager',
+    codeType: 'responseCode',
+    code: '200',
+    success: true,
+    canonicalMeaning: 'Success.',
+    authoredMessage: 'Bill Manager request accepted.',
+    retriable: false,
+    terminal: true,
+    proof: [code('bill-manager.ts checks rescode "200"')],
+  },
+  {
+    scope: 'billmanager',
+    codeType: 'responseCode',
+    code: '409',
+    success: false,
+    canonicalMeaning: 'Conflict.',
+    authoredMessage:
+      'Bill Manager rejected the request as a conflict — e.g. biller already registered, duplicate externalReference, or a partially/fully paid invoice cannot be cancelled. See the response message.',
+    retriable: false,
+    terminal: false,
+    proof: [{ kind: 'safaricom-docs', ref: 'Bill Manager 409 error family' }],
+  },
+
+  // ── M-Pesa Ratiba (standing order) ───────────────────────────────────────
+  {
+    scope: 'ratiba',
+    codeType: 'responseCode',
+    code: '200',
+    success: true,
+    canonicalMeaning: 'Request accepted for processing.',
+    authoredMessage: 'Standing order request accepted — a PIN prompt was sent to the customer.',
+    retriable: false,
+    terminal: true,
+    proof: [code('ratiba.ts checks ResponseHeader.responseCode "200"')],
+  },
+  {
+    scope: 'ratiba',
+    codeType: 'resultCode',
+    code: '0',
+    success: true,
+    canonicalMeaning: 'The service request is processed successfully.',
+    authoredMessage: 'Standing order created.',
+    retriable: false,
+    terminal: true,
+    proof: [{ kind: 'safaricom-docs', ref: 'Ratiba callback success' }],
+  },
+  {
+    scope: 'ratiba',
+    codeType: 'resultCode',
+    code: '1037',
+    success: false,
+    canonicalMeaning: 'DS timeout — user cannot be reached.',
+    authoredMessage:
+      "The customer didn't receive or respond to the PIN prompt (phone off/out of network, or no STK applet). Ask them to retry.",
+    retriable: true,
+    terminal: false,
+    errorClass: 'DarajaUserUnreachableError',
+    proof: [{ kind: 'safaricom-docs', ref: 'Ratiba error codes' }],
+  },
+  {
+    scope: 'ratiba',
+    codeType: 'resultCode',
+    code: '1032',
+    success: false,
+    canonicalMeaning: 'Request cancelled by user.',
+    authoredMessage: 'The customer cancelled the PIN prompt (or it timed out).',
+    retriable: true,
+    terminal: false,
+    errorClass: 'DarajaCancelledError',
+    proof: [{ kind: 'safaricom-docs', ref: 'Ratiba error codes' }],
+  },
+  {
+    scope: 'ratiba',
+    codeType: 'resultCode',
+    code: '2001',
+    success: false,
+    canonicalMeaning: 'The initiator information is invalid.',
+    authoredMessage:
+      'The customer entered the wrong M-Pesa PIN. Ask them to retry with the correct PIN.',
+    retriable: true,
+    terminal: false,
+    proof: [{ kind: 'safaricom-docs', ref: 'Ratiba error codes' }],
+  },
+  {
+    scope: 'ratiba',
+    codeType: 'resultCode',
+    code: '1050',
+    success: false,
+    canonicalMeaning: 'A standing order with the same name already exists on the profile.',
+    authoredMessage:
+      'The customer already has a standing order with this name. Use a unique StandingOrderName.',
+    retriable: false,
+    terminal: false,
+    proof: [{ kind: 'safaricom-docs', ref: 'Ratiba error codes' }],
+  },
+  {
+    scope: 'ratiba',
+    codeType: 'resultCode',
+    code: '1051',
+    success: false,
+    canonicalMeaning: 'Bad request — one or more fields in the payload is invalid.',
+    authoredMessage: 'A field in the standing-order request is invalid. Check the request payload.',
+    retriable: false,
+    terminal: false,
+    proof: [{ kind: 'safaricom-docs', ref: 'Ratiba error codes' }],
+  },
+
+  // ── B2B Express Checkout (USSD push) ─────────────────────────────────────
+  {
+    scope: 'b2bexpress',
+    codeType: 'responseCode',
+    code: '0',
+    success: true,
+    canonicalMeaning: 'USSD Initiated Successfully.',
+    authoredMessage: 'USSD push initiated — the merchant was prompted to enter their PIN.',
+    retriable: false,
+    terminal: false,
+    proof: [code('b2b-express.ts checks code "0"')],
+  },
+  {
+    scope: 'b2bexpress',
+    codeType: 'responseCode',
+    code: '4104',
+    success: false,
+    canonicalMeaning: 'Missing Nominated Number.',
+    authoredMessage:
+      "The shortcode has no Nominated Number (the operator's preferred MSISDN) set on the M-Pesa portal — the push can't be sent. Set it under Organization Details.",
+    retriable: false,
+    terminal: false,
+    proof: [{ kind: 'safaricom-docs', ref: 'B2B Express error codes' }],
+  },
+  {
+    scope: 'b2bexpress',
+    codeType: 'responseCode',
+    code: '4102',
+    success: false,
+    canonicalMeaning: 'Merchant KYC fail.',
+    authoredMessage: 'The merchant failed KYC. Provide valid KYC.',
+    retriable: false,
+    terminal: false,
+    proof: [{ kind: 'safaricom-docs', ref: 'B2B Express error codes' }],
+  },
+  {
+    scope: 'b2bexpress',
+    codeType: 'resultCode',
+    code: '0',
+    success: true,
+    canonicalMeaning: 'The service request is processed successfully.',
+    authoredMessage: 'Payment completed.',
+    retriable: false,
+    terminal: true,
+    proof: [{ kind: 'safaricom-docs', ref: 'B2B Express callback success' }],
+  },
+  {
+    scope: 'b2bexpress',
+    codeType: 'resultCode',
+    code: '4001',
+    success: false,
+    canonicalMeaning: 'User cancelled transaction.',
+    authoredMessage: 'The merchant cancelled the USSD prompt (or it timed out).',
+    retriable: true,
+    terminal: false,
+    errorClass: 'DarajaCancelledError',
+    proof: [{ kind: 'safaricom-docs', ref: 'B2B Express callback (cancelled)' }],
   },
 
   // ── C2B validation reply codes (what the merchant SENDS) ─────────────────

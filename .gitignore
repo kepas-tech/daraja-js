@@ -26,3 +26,6 @@ coverage/
 
 # generated API reference (built + deployed by CI)
 docs/api/
+
+# Local live-probe scripts (machine-specific .env path; never committed/published)
+scripts/live-*.mjs

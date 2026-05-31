@@ -40,15 +40,25 @@ export {
   type B2bCommandId,
   type B2bPayInput,
   type B2bResult,
+  type B2bTopUpInput,
   type FloatTransferInput,
   parseB2bResult,
+  type RemitTaxInput,
 } from './resources/b2b.js';
+// B2B Express Checkout — USSD push to till
+export {
+  type ExpressCallback,
+  type ExpressCheckoutAck,
+  type ExpressCheckoutInput,
+  parseExpressCallback,
+} from './resources/b2b-express.js';
 // B2C — disbursement + result parsing
 export {
   type B2cCommandId,
   type B2cResult,
   type B2cSendInput,
   type B2cSendResult,
+  type B2cToPochiInput,
   parseB2cResult,
 } from './resources/b2c.js';
 // Balance — query + pipe-delimited parser (gotcha #6)
@@ -60,6 +70,28 @@ export {
   parseAccountBalance,
   parseBalanceResult,
 } from './resources/balance.js';
+// Bill Manager — invoicing + reconciliation (rescode "200", app_key header)
+export {
+  type AcknowledgePaymentInput,
+  type BillManagerOptInInput,
+  type BillManagerOptInResult,
+  type BillManagerPayment,
+  type BillManagerResult,
+  billManagerAck,
+  type CancelBulkInvoicesInput,
+  type CancelInvoiceInput,
+  type Invoice,
+  parseBillManagerPayment,
+  type SendBulkInvoicesInput,
+  type SendInvoiceInput,
+} from './resources/bill-manager.js';
+// Lipa na Bonga — points conversion + redemption
+export type {
+  CalculatePointsInput,
+  CalculatePointsResult,
+  RedeemAck,
+  RedeemInput,
+} from './resources/bonga.js';
 // C2B — registration + callback parsing + validation responses
 export {
   type C2bConfirmation,
@@ -72,6 +104,8 @@ export {
   type RegisterUrlsInput,
   type RegisterUrlsResult,
 } from './resources/c2b.js';
+// Query Org Info — shortcode validation (read-only, synchronous)
+export type { OrgInfoQueryInput, OrgInfoResult } from './resources/org-info.js';
 // Pull Transactions — recon backfill (Daraja 3.0)
 export type {
   PullQueryInput,
@@ -81,6 +115,14 @@ export type {
 } from './resources/pull.js';
 // QR — dynamic QR generation
 export type { QrGenerateInput, QrGenerateResult, QrTrxCode } from './resources/qr.js';
+// M-Pesa Ratiba — standing orders
+export {
+  parseRatibaCallback,
+  type RatibaAck,
+  type RatibaCallback,
+  type RatibaCreateInput,
+  type RatibaFrequency,
+} from './resources/ratiba.js';
 // Reversal — request + result parsing + recipient-spend classifier
 export {
   isSettledByRecipientSpend,
