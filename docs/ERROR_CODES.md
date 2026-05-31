@@ -85,6 +85,54 @@
 | `1000` | pullStatus | ✅ | Pull callback URL registered. | no | yes | — | sdk-code |
 | `1001` | pullStatus | ✅ | Pull callback URL was already registered (no change needed). | no | yes | — | sdk-code |
 
+## Bill Manager (`billmanager`)
+
+| Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
+|------|------|---------|---------|-----------|----------|-----------|-------|
+| `200` | responseCode | ✅ | Bill Manager request accepted. | no | yes | — | sdk-code |
+| `409` | responseCode | — | Bill Manager rejected the request as a conflict — e.g. biller already registered, duplicate externalReference, or a partially/fully paid invoice cannot be cancelled. See the response message. | no | no | DarajaAPIError | safaricom-docs |
+
+## M-Pesa Ratiba (standing orders) (`ratiba`)
+
+| Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
+|------|------|---------|---------|-----------|----------|-----------|-------|
+| `200` | responseCode | ✅ | Standing order request accepted — a PIN prompt was sent to the customer. | no | yes | — | sdk-code |
+| `0` | resultCode | ✅ | Standing order created. | no | yes | — | safaricom-docs |
+| `1037` | resultCode | — | The customer didn't receive or respond to the PIN prompt (phone off/out of network, or no STK applet). Ask them to retry. | yes | no | DarajaUserUnreachableError | safaricom-docs |
+| `1032` | resultCode | — | The customer cancelled the PIN prompt (or it timed out). | yes | no | DarajaCancelledError | safaricom-docs |
+| `2001` | resultCode | — | The customer entered the wrong M-Pesa PIN. Ask them to retry with the correct PIN. | yes | no | DarajaAPIError | safaricom-docs |
+| `1050` | resultCode | — | The customer already has a standing order with this name. Use a unique StandingOrderName. | no | no | DarajaAPIError | safaricom-docs |
+| `1051` | resultCode | — | A field in the standing-order request is invalid. Check the request payload. | no | no | DarajaAPIError | safaricom-docs |
+
+## B2B Express Checkout (`b2bexpress`)
+
+| Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
+|------|------|---------|---------|-----------|----------|-----------|-------|
+| `0` | responseCode | ✅ | USSD push initiated — the merchant was prompted to enter their PIN. | no | no | — | sdk-code |
+| `4104` | responseCode | — | The shortcode has no Nominated Number (the operator's preferred MSISDN) set on the M-Pesa portal — the push can't be sent. Set it under Organization Details. | no | no | DarajaAPIError | safaricom-docs |
+| `4102` | responseCode | — | The merchant failed KYC. Provide valid KYC. | no | no | DarajaAPIError | safaricom-docs |
+| `0` | resultCode | ✅ | Payment completed. | no | yes | — | safaricom-docs |
+| `4001` | resultCode | — | The merchant cancelled the USSD prompt (or it timed out). | yes | no | DarajaCancelledError | safaricom-docs |
+
+## Lipa na Bonga (`bonga`)
+
+| Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
+|------|------|---------|---------|-----------|----------|-----------|-------|
+| `200` | responseCode | ✅ | Bonga request accepted (points→KES conversion, or redemption initiated). | no | no | — | sdk-code |
+| `6000` | resultCode | ✅ | Bonga redemption processed successfully. | no | yes | — | safaricom-docs |
+| `6001` | resultCode | — | Fail. | no | no | DarajaAPIError | safaricom-docs |
+| `6004` | resultCode | — | Server error. | yes | no | DarajaAPIError | safaricom-docs |
+| `6005` | resultCode | — | Invalid credentials passed. | no | no | DarajaAPIError | safaricom-docs |
+| `6006` | resultCode | — | Missing parts in the request body. | no | no | DarajaAPIError | safaricom-docs |
+| `6007` | resultCode | — | CBS unavailable / system busy. | yes | no | DarajaAPIError | safaricom-docs |
+| `6008` | resultCode | — | STK unavailable / system busy. | yes | no | DarajaAPIError | safaricom-docs |
+| `6009` | resultCode | — | Broker unavailable / system busy. | yes | no | DarajaAPIError | safaricom-docs |
+| `6011` | resultCode | — | Database unavailable. | yes | no | DarajaAPIError | safaricom-docs |
+| `1037` | resultCode | — | The PIN prompt didn't reach the customer (no STK applet / phone unreachable). Ask them to update their SIM and retry. | yes | no | DarajaUserUnreachableError | safaricom-docs |
+| `1031` | resultCode | — | STK push timeout — the customer did not enter the PIN in time. | yes | no | DarajaAPIError | safaricom-docs |
+| `2001` | resultCode | — | Wrong PIN entered / initiator information invalid. | yes | no | DarajaAPIError | safaricom-docs |
+| `17` | resultCode | — | Reversal fails due to account balance limit (KES 100,000). | no | no | DarajaAPIError | safaricom-docs |
+
 ## Codes we deliberately do NOT assert
 
 Safaricom returns these (or they're widely cited) but we have **not** observed them

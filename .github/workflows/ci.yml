@@ -57,3 +57,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: docs/ERROR_CODES.md is in sync with the catalog
+        run: |
+          pnpm docs:errors
+          git diff --exit-code docs/ERROR_CODES.md \
+            || (echo "::error::docs/ERROR_CODES.md is stale — run 'pnpm build && pnpm docs:errors' and commit." && exit 1)

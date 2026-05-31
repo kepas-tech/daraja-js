@@ -43,6 +43,11 @@ const daraja = new Daraja({
   passkey: process.env.MPESA_PASSKEY!,
   environment: 'sandbox',             // 'sandbox' | 'production'
   maxNetworkRetries: 2,
+  // Required for the initiator-authed APIs (b2c.*, b2b.*, status.transaction, reversal):
+  // initiator: process.env.MPESA_INITIATOR!,
+  // securityCredential: await generateSecurityCredential({ … }),  // RSA-encrypt the initiator password
+  // Required for Bill Manager invoicing (the key billManager.optIn returns):
+  // billManagerAppKey: process.env.MPESA_BILLMANAGER_APP_KEY!,
 });
 
 const res = await daraja.collect.stkPush({
@@ -203,28 +208,48 @@ Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-
 
 ## What's covered
 
-**Available now:**
+**Collection (money in):**
 
-- `collect.stkPush` — STK Push, with the gotcha-defeating validation layer.
-- `parseStkCallback` — parse the async STK result Safaricom posts back.
+- `collect.stkPush` + `parseStkCallback` — STK Push, with the gotcha-defeating validation layer; parse the async result Safaricom posts back.
 - `c2b.registerUrls` + `parseC2bConfirmation` / `parseC2bValidation` + `c2bAccept` / `c2bReject` — capture direct PayBill/Till payments (confirmation is terminal — gotcha #8).
-- `b2c.send` + `parseB2cResult` — disburse to a customer phone (money out; Utility account — gotcha #7).
+- `bonga.calculatePoints` + `bonga.redeem` — Lipa na Bonga: convert Bonga points→KES and redeem them as payment (settles via the C2B confirmation callback).
+
+**Disbursement (money out):**
+
+- `b2c.send` + `parseB2cResult` — disburse to a customer phone (Utility account — gotcha #7).
+- `b2c.toPochi` — pay a customer's business wallet (pochi la biashara), `BusinessPayToPochi`.
 - `b2b.pay` + `b2b.transferFloat` + `parseB2bResult` — pay another business, and move float Working↔Utility (funds B2C).
+- `b2b.topUp` — B2C Account Top Up (`BusinessPayToBulk`): load a B2C shortcode's Utility account.
+- `b2b.remitTax` — Tax Remittance to KRA (`PayTaxToKRA`).
+
+**Standing orders & express:**
+
+- `ratiba.create` + `parseRatibaCallback` — M-Pesa Ratiba: create a customer standing order (recurring collection).
+- `express.checkout` + `parseExpressCallback` — B2B Express Checkout: USSD push to a merchant's till to pay a vendor paybill.
+
+**Account management & reconciliation:**
+
 - `status.stkPush` (sync) + `status.transaction` (async) + `parseStatusResult` — query a transaction's outcome.
 - `reversal.request` + `parseReversalResult` + `isSettledByRecipientSpend` — reverse a transaction; classify the "recipient already spent it" case (gotcha #16).
-- `qr.generate` — dynamic QR codes (Pay Bill / Buy Goods / Send Money / etc.).
-- `pull.registerUrl` + `pull.query` — Pull Transaction API (Daraja 3.0) to backfill C2B payments missed when a callback failed (gotcha #10).
-- `generateSecurityCredential` — RSA-encrypt the initiator password for the initiator-authed APIs.
 - `balance.query` + `parseBalanceResult` / `parseAccountBalance` — query account balances, with the pipe-delimited parser (gotcha #6).
+- `pull.registerUrl` + `pull.query` — Pull Transaction API (Daraja 3.0) to backfill C2B payments missed when a callback failed (gotcha #10).
+- `orgInfo.query` — validate a shortcode's name + tariff before paying (synchronous; reduces reversals to the wrong till/paybill).
+- `qr.generate` — dynamic QR codes (Pay Bill / Buy Goods / Send Money / etc.).
+
+**Invoicing:**
+
+- `billManager.optIn` / `updateOptIn` / `sendInvoice` / `sendBulkInvoices` / `cancelInvoice` / `cancelBulkInvoices` / `acknowledgePayment` + `parseBillManagerPayment` + `billManagerAck` — Bill Manager invoicing & reconciliation.
+
+**Cross-cutting:**
+
+- `generateSecurityCredential` — RSA-encrypt the initiator password for the initiator-authed APIs.
 - `webhooks.sign` / `constructEvent` / `constructEventAsync` — Stripe-compatible signing + verification (sync + edge).
 - The phone / amount / timestamp / password primitives (`normalizePhone`, `phoneToNumber`, `makeTimestamp`, `generatePassword`, `validateAmount`).
-- The `DarajaError` hierarchy + `errorFromResult` + a **proven result-code catalog** that turns Safaricom's codes into actionable messages — see [ERROR_CODES.md](./docs/ERROR_CODES.md).
+- The `DarajaError` hierarchy + `errorFromResult` / `errorFromResponse` + a **proven result-code catalog** that turns Safaricom's codes into actionable messages — see [ERROR_CODES.md](./docs/ERROR_CODES.md).
 - OAuth token management (race-safe, 3599s TTL) and the HTTP transport.
 - Pluggable cross-process token cache (`tokenStore`) — share one OAuth token across workers (e.g. Redis), no SDK Redis dependency.
 
-This now covers **every Daraja endpoint** a production PayBill uses — collection, disbursement, account management, reconciliation, and QR.
-
-**On the [roadmap](./ROADMAP.md) (post-1.0):** Tax Remittance, B2C Topup, B2B Express Checkout, Ratiba (standing orders).
+This covers **100% of Safaricom's money APIs** — collection, disbursement, standing orders, account management, reconciliation, invoicing, and QR. (Out of scope by design: the sandbox-only C2B simulate endpoint and the non-money telco APIs.) The commercial/add-on products (Bill Manager, Ratiba, B2B Express, Query Org Info, Lipa na Bonga) require enabling on your Daraja app — and some a Go-Live — before live calls succeed.
 
 Full surface in the [API reference](https://nellylemmy.github.io/daraja-js/) (auto-published from each commit to `main`).
 
