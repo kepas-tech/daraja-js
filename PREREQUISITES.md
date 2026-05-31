@@ -2,9 +2,9 @@
 
 `@kepas/daraja-js` is a client for Safaricom's Daraja (M-Pesa) APIs. The SDK
 handles the code; **Safaricom controls access.** Each API needs (a) the right
-**Daraja app product enabled**, (b) the right **credentials**, and for some, a
-specific **operator role** or **Go-Live**. This page lists the exact, categorical
-prerequisites per capability so you reach 100% compatibility.
+**Daraja product enabled** on your app, (b) the right **credentials**, and for
+some, a specific **operator role** or **Go-Live**. This page lists, for each
+capability, exactly what you need — so every part works.
 
 > **How these were determined.** Auth tiers come from the SDK's own code — which
 > calls require an initiator vs a passkey. Product, role, and Go-Live requirements
@@ -100,7 +100,7 @@ SDK config for these: `passkey`, `initiator`, `securityCredential`, `billManager
 > The SDK does not gate on product/role — only on credentials it needs to build the
 > request. A missing product/role surfaces as Safaricom's own `401`/`ResultCode`
 > (e.g. B2B/B2C `ResultCode 21` = "initiator is not allowed", Express `4104` =
-> missing Nominated Number) — passed through verbatim. See [docs/ERROR_CODES.md](./docs/ERROR_CODES.md).
+> missing Nominated Number) — passed through unchanged. See [docs/ERROR_CODES.md](./docs/ERROR_CODES.md).
 
 ---
 

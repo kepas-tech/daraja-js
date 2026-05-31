@@ -1,6 +1,6 @@
 # daraja-js
 
-> Type-safe Node.js / TypeScript SDK for Safaricom Daraja (M-Pesa). It encodes the production gotchas that silently break real PayBills — so you don't rediscover them in your own outage.
+> Type-safe Node.js / TypeScript SDK for Safaricom Daraja (M-Pesa). It handles the production gotchas that quietly break real PayBills, so your team does not meet them during an outage.
 
 [![npm](https://img.shields.io/npm/v/@kepas/daraja-js.svg)](https://www.npmjs.com/package/@kepas/daraja-js)
 [![CI](https://github.com/nellylemmy/daraja-js/actions/workflows/ci.yml/badge.svg)](https://github.com/nellylemmy/daraja-js/actions/workflows/ci.yml)
@@ -15,9 +15,9 @@
 
 ## Why this exists
 
-The Daraja API works. The problem is the dozen undocumented behaviors that pass in sandbox and fail in production — phone numbers that must be JSON numbers, balances pipe-delimited into a single string, callbacks that never retry. Every team that ships on M-Pesa rediscovers these the hard way, usually mid-incident.
+The Daraja API works. The trouble is the many small behaviours that are not written down — they pass in sandbox and fail in production. Phone numbers that must be JSON numbers. Balances packed into one pipe-delimited string. Callbacks that never retry. Most teams on M-Pesa find these the hard way, often in the middle of an incident.
 
-`daraja-js` is the distillation of a production PayBill (Safaricom shortcode `4052037`) into a typed SDK. Each gotcha below is a class of bug we hit in production and now prevent at the type level or in the request layer.
+`daraja-js` comes from running a real PayBill (Safaricom shortcode `4052037`), turned into a typed SDK. Each gotcha below is a bug we hit in production and now stop — in the types, or in the request layer.
 
 ## Install
 
@@ -88,8 +88,8 @@ const daraja = new Daraja({
 });
 ```
 
-The in-memory fast path still applies — Redis is only read when the local token
-is cold. Keys are namespaced per environment + consumer key.
+The in-memory cache still runs first — Redis is read only when the local token is
+missing or expired. Keys are kept separate per environment and consumer key.
 
 ### Receiving the STK result (Daraja callback)
 
@@ -187,7 +187,7 @@ app.post('/webhooks/mpesa/stk',
 
 ## The gotchas it defeats
 
-These are real production failures, encoded so you never meet them:
+These are real production failures, built into the SDK so you never meet them:
 
 | # | Gotcha | How the SDK handles it |
 |---|--------|------------------------|
@@ -206,7 +206,7 @@ These are real production failures, encoded so you never meet them:
 | 13 | Prod vs sandbox base URLs | Single `environment` flag |
 | 14 | Bank withdrawal is **not** API-automatable | Documented; no misleading stub |
 
-Two more the SDK exposes as helpers: amounts ≤100 KES on B2B PayBill are free-tier (no assumed fee), and reversal-failure-by-recipient-spend (`isSettledByRecipientSpend()`) since Safaricom signals it only via free-text `resultDesc`.
+Two more come as helpers: amounts of 100 KES or less on B2B PayBill are free (the SDK assumes no fee), and a reversal that failed because the recipient already spent the money — `isSettledByRecipientSpend()` — which Safaricom only tells you through the free-text `resultDesc`.
 
 ## What's covered
 
@@ -261,24 +261,24 @@ Types are bundled — no `@types/daraja-js` needed. Inputs and Daraja callbacks 
 
 ## Proven meaningful errors
 
-Safaricom returns terse codes (`1037`, `SFC_IC0003`, …) and **publishes no complete code reference**. daraja-js ships a catalog where each meaning traces to a source we can point to — a real production response we observed, our own code, or official Safaricom docs. Parsed results carry the extras:
+Safaricom returns short codes (`1037`, `SFC_IC0003`, …) and **does not publish a full list**. daraja-js ships a catalog where every meaning comes from a real source: a production response we saw, our own code, or Safaricom's official docs. Parsed results carry the extras:
 
 ```ts
 const r = parseStkCallback(req.body);
 if (!r.success) {
   console.log(r.resultCode);  // 1037
-  console.log(r.resultDesc);  // Safaricom's verbatim text (never altered)
+  console.log(r.resultDesc);  // Safaricom's exact text (unchanged)
   console.log(r.meaning);     // "The customer didn't respond to the STK prompt within ~60s…"
   console.log(r.retriable);   // true
   console.log(r.catalogued);  // true; if false, the code isn't catalogued and we pass Safaricom's text through unchanged
 }
 ```
 
-A code we can't prove is passed through **verbatim** (`catalogued: false`) — we never fabricate a meaning. Full table + proof sources: [docs/ERROR_CODES.md](./docs/ERROR_CODES.md).
+A code we can't back with a source is passed through **as-is** (`catalogued: false`) — we never make up a meaning. Full table and sources: [docs/ERROR_CODES.md](./docs/ERROR_CODES.md).
 
 ## Security
 
-Webhook signatures use the Stripe-compatible scheme (`t=…,v1=…`, HMAC-SHA256 over raw body, constant-time compare, replay window). Report vulnerabilities per [SECURITY.md](./SECURITY.md) — **not** via public issues. We ship neither Safaricom certificate (they own those); `generateSecurityCredential()` works against your own.
+Webhook signatures use the Stripe-compatible scheme (`t=…,v1=…`, HMAC-SHA256 over the raw body, constant-time compare, replay window). Report vulnerabilities through [SECURITY.md](./SECURITY.md), **not** public issues. We do not ship any Safaricom certificate (they own those); `generateSecurityCredential()` works with your own.
 
 Three things you own when integrating:
 
