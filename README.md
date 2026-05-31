@@ -261,7 +261,7 @@ Types are bundled — no `@types/daraja-js` needed. Inputs and Daraja callbacks 
 
 ## Proven meaningful errors
 
-Safaricom returns terse codes (`1037`, `SFC_IC0003`, …) and **publishes no complete code reference**. daraja-js ships a catalog where every meaning is **proven** — observed in real production responses, our own code, or official docs — never from community guesswork. Parsed results carry the extras:
+Safaricom returns terse codes (`1037`, `SFC_IC0003`, …) and **publishes no complete code reference**. daraja-js ships a catalog where each meaning traces to a source we can point to — a real production response we observed, our own code, or official Safaricom docs. Parsed results carry the extras:
 
 ```ts
 const r = parseStkCallback(req.body);
@@ -270,7 +270,7 @@ if (!r.success) {
   console.log(r.resultDesc);  // Safaricom's verbatim text (never altered)
   console.log(r.meaning);     // "The customer didn't respond to the STK prompt within ~60s…"
   console.log(r.retriable);   // true
-  console.log(r.catalogued);  // true — false means we pass Safaricom's text through, no guess
+  console.log(r.catalogued);  // true; if false, the code isn't catalogued and we pass Safaricom's text through unchanged
 }
 ```
 

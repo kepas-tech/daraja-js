@@ -6,12 +6,11 @@ handles the code; **Safaricom controls access.** Each API needs (a) the right
 specific **operator role** or **Go-Live**. This page lists the exact, categorical
 prerequisites per capability so you reach 100% compatibility.
 
-> **Proven, not guessed.** Auth tiers come from the SDK's own code (which calls
-> require an initiator vs a passkey); product/role/Go-Live requirements come from
-> Safaricom's official API docs (preserved under [`docs/specs/`](./docs/specs)).
-> We also confirmed live that an app **without** a product enabled returns
-> `HTTP 401 "Invalid API call as no apiproduct match found"` — enablement is real,
-> not optional.
+> **How these were determined.** Auth tiers come from the SDK's own code — which
+> calls require an initiator vs a passkey. Product, role, and Go-Live requirements
+> come from Safaricom's official API docs, preserved under [`docs/specs/`](./docs/specs).
+> We also confirmed against the live API that an app without a product enabled
+> returns `HTTP 401 "Invalid API call as no apiproduct match found"`.
 
 ---
 
