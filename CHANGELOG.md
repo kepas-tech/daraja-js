@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0
+
+### Minor Changes
+
+- 9eac3d6: Add B2B Express Checkout (`daraja.express.checkout`) — vendor-initiated USSD push to a merchant's till (`/v1/ussdpush/get-msisdn`). OAuth-only, camelCase body, `code`/`status` sync ack; auto-generates `RequestRefID` (UUID) when omitted. Adds `parseExpressCallback` for the FLAT async callback (top-level `resultCode`, no `Result{}` envelope). New `b2bexpress` catalog scope (`0`, `4104`, `4102` sync; `0`, `4001` async).
+- 9eac3d6: Add `b2b.topUp` (B2C Account Top Up — `BusinessPayToBulk`, loads a B2C shortcode's Utility account; optional `requester`) and `b2b.remitTax` (Tax Remittance to KRA — `PayTaxToKRA`, PartyB fixed `572572`, `prn` sent as AccountReference, own `/mpesa/b2b/v1/remittax` endpoint). Both reuse the b2b initiator guard, ack, and `parseB2bResult`. Verified live against production: `topUp` rejected an invalid PartyB synchronously; `remitTax` accepted (ResponseCode 0).
+- 9eac3d6: Add Bill Manager support (`daraja.billManager`): `optIn`, `updateOptIn`, `sendInvoice`, `sendBulkInvoices` (≤1000), `cancelInvoice`, `cancelBulkInvoices`, `acknowledgePayment`, plus `parseBillManagerPayment` (inbound payment push) and `billManagerAck`. Bill Manager uses its own success convention (string `rescode "200"`, not `ResponseCode "0"`) and an `app_key` header obtained from `optIn` (pass per-call as `appKey` or set `config.billManagerAppKey`). `http.post` now accepts an additive `headers` option; fixed auth/content-type headers always win the merge. New `billmanager` catalog scope (`200`/`409`).
+- 9eac3d6: Add Lipa na Bonga (`daraja.bonga`): `calculatePoints` (read-only points→KES conversion, retryable) and `redeem` (redeem Bonga points as payment to a paybill/till). OAuth-only, nested `header`/`body` envelope, success is `header.responseCode 200`. The redemption result settles on the existing C2B confirmation callback (`parseC2bConfirmation`) — no Bonga-specific result parser. New `bonga` catalog scope.
+- 9eac3d6: Add Query Organization Info (`daraja.orgInfo.query`) — synchronous, read-only shortcode validation (`/sfcverify/v1/query/info`) returning org name, tariff (ChargeProfileID), and a `success` flag. OAuth-only, idempotent (retryable). `identifierType` maps `paybill`→4 / `till`→2. Success is gated on `ResponseMessage === "Success"` + an OrganizationName (the spec's numeric success code is contradictory — `4000` vs `0` — so the raw code is exposed verbatim, not asserted).
+- 9eac3d6: Add Business To Pochi (`daraja.b2c.toPochi`) — pay a customer's business wallet (pochi la biashara) via `/mpesa/b2pochi/v1/paymentrequest` + `BusinessPayToPochi`. Reuses B2C auth, the `ResponseCode "0"` ack, and `parseB2cResult`. Caller-supplied `originatorConversationId` (dedupe guard, auto-generated UUID if omitted) and optional `occasion` (sent as Safaricom's misspelled `Occassion`).
+- 9eac3d6: Add M-Pesa Ratiba support (`daraja.ratiba.create`) — create a customer standing order (recurring collection) via `/standingorder/v1/createStandingOrderExternal`. OAuth-only; success is the nested `ResponseHeader.responseCode "200"`. Adds `parseRatibaCallback` for the async result (nested `responseBody.responseData[]` `name`/`value` pairs, parsed case-insensitively), `RatibaFrequency` (1–8), and `paybill`/`buygoods` transaction-type mapping (the latter sends Safaricom's misspelled `Standing Order Customer Pay Marchant`). New `ratiba` catalog scope (`200`, `0`, `1037`, `1032`, `2001`, `1050`, `1051`).
+
 ## 1.2.0
 
 ### Minor Changes
