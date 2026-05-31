@@ -43,7 +43,8 @@
     "dist",
     "LICENSE",
     "NOTICE",
-    "README.md"
+    "README.md",
+    "PREREQUISITES.md"
   ],
   "engines": {
     "node": ">=20"

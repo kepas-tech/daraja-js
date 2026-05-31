@@ -29,6 +29,8 @@ pnpm add @kepas/daraja-js
 
 Node 20+. Ships ESM + CJS + types. Works in Node, Bun, and Cloudflare Workers (WebCrypto-backed webhook verification).
 
+> **Before you go live, read [PREREQUISITES.md](./PREREQUISITES.md).** It lists — per API — the exact Safaricom credentials, the Daraja **product** you must enable on your app, and the operator **role** / Go-Live each capability requires. The code is ready; Safaricom controls access, and a missing product returns `401 "no apiproduct match found"`.
+
 ## Quickstart
 
 ### ESM
