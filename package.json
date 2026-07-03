@@ -71,7 +71,7 @@
     "@changesets/cli": "^2.27.9",
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
-    "@types/node": "^25.9.1",
+    "@types/node": "^26.1.0",
     "fast-check": "^4.8.0",
     "msw": "^2.4.11",
     "tsup": "^8.3.0",
