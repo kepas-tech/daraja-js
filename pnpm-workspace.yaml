@@ -2,3 +2,20 @@
 # without restructuring.
 packages:
   - '.'
+
+# Supply-chain guards (pnpm >= 10.27).
+# Wait 7 days before installing a freshly published version, transitive deps included.
+minimumReleaseAge: 10080
+# Only direct dependencies may come from git/tarball URLs; transitive deps must come from the registry.
+blockExoticSubdeps: true
+# Refuse a version whose publish trust (trusted publisher / provenance) is weaker than an earlier one.
+trustPolicy: no-downgrade
+# ...unless it was published more than a year ago (525600 min). Older versions predate provenance
+# being common and have had time to be vetted; e.g. chokidar 4.0.3 (Dec 2024) trips the check.
+trustPolicyIgnoreAfter: 525600
+
+# pnpm 10 no longer runs dependency lifecycle scripts by default. These two are the only ones in
+# the tree; both are optional (esbuild ships platform binaries as optional deps, msw only prints).
+ignoredBuiltDependencies:
+  - esbuild
+  - msw
