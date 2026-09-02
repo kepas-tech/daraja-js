@@ -19,3 +19,8 @@ updates:
       interval: weekly
     commit-message:
       prefix: "ci(deps)"
+    ignore:
+      # Floating major tag (@v4) is the documented way to pin codeql-action.
+      # Only majors are worth a PR; minor/patch pins would churn weekly.
+      - dependency-name: github/codeql-action
+        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
