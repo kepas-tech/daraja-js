@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1
+
+### Patch Changes
+
+- 4ea2ebf: Repository moved to the KEPAS Technologies organization: `github.com/kepas-tech/daraja-js`. Package metadata (`repository`, `homepage`, `bugs`), the API reference URL, and all community links now point at the new home. No runtime changes.
+
 ## 1.4.0
 
 ### Minor Changes
