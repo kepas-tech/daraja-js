@@ -22,7 +22,7 @@ This appends a `Signed-off-by: Your Name <your@email>` trailer. The name and ema
 
 ## First-time contributor
 
-1. Find an issue tagged [`good-first-issue`](https://github.com/nellylemmy/daraja-js/labels/good-first-issue).
+1. Find an issue tagged [`good-first-issue`](https://github.com/kepas-tech/daraja-js/labels/good-first-issue).
 2. Comment to claim it.
 3. Fork, branch, code, **sign off**, open a PR using the template.
 

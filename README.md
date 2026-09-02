@@ -3,7 +3,7 @@
 > Type-safe Node.js / TypeScript SDK for Safaricom Daraja (M-Pesa). It handles the production gotchas that quietly break real PayBills, so your team does not meet them during an outage.
 
 [![npm](https://img.shields.io/npm/v/@kepas/daraja-js.svg)](https://www.npmjs.com/package/@kepas/daraja-js)
-[![CI](https://github.com/nellylemmy/daraja-js/actions/workflows/ci.yml/badge.svg)](https://github.com/nellylemmy/daraja-js/actions/workflows/ci.yml)
+[![CI](https://github.com/kepas-tech/daraja-js/actions/workflows/ci.yml/badge.svg)](https://github.com/kepas-tech/daraja-js/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
 [![Types](https://img.shields.io/badge/types-included-blue.svg)](#typescript)
 
@@ -253,7 +253,7 @@ Two more come as helpers: amounts of 100 KES or less on B2B PayBill are free (th
 
 This covers **100% of Safaricom's money APIs** — collection, disbursement, standing orders, account management, reconciliation, invoicing, and QR. (Out of scope by design: the sandbox-only C2B simulate endpoint and the non-money telco APIs.) The commercial/add-on products (Bill Manager, Ratiba, B2B Express, Query Org Info, Lipa na Bonga) require enabling on your Daraja app — and some a Go-Live — before live calls succeed.
 
-Full surface in the [API reference](https://nellylemmy.github.io/daraja-js/) (auto-published from each commit to `main`).
+Full surface in the [API reference](https://kepas-tech.github.io/daraja-js/) (auto-published from each commit to `main`).
 
 ## TypeScript
 
@@ -302,8 +302,8 @@ International card rails and full details in [DONATING.md](./DONATING.md).
 
 ## Community
 
-- [Discussions](https://github.com/nellylemmy/daraja-js/discussions) — questions, ideas, RFCs
-- [Issues](https://github.com/nellylemmy/daraja-js/issues) — bugs + features
+- [Discussions](https://github.com/kepas-tech/daraja-js/discussions) — questions, ideas, RFCs
+- [Issues](https://github.com/kepas-tech/daraja-js/issues) — bugs + features
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — DCO sign-off required (`git commit -s`)
 
 ## License

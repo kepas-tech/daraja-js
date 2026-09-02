@@ -6,7 +6,7 @@
 
 **Do not open a public issue for security problems.**
 
-Use GitHub's [private vulnerability reporting](https://github.com/nellylemmy/daraja-js/security/advisories/new) (Security tab → Report a vulnerability), or email **nelsonlemmy61@gmail.com** with `[SECURITY]` in the subject.
+Use GitHub's [private vulnerability reporting](https://github.com/kepas-tech/daraja-js/security/advisories/new) (Security tab → Report a vulnerability), or email **nelsonlemmy61@gmail.com** with `[SECURITY]` in the subject.
 
 Include: affected version, a reproduction (credentials scrubbed), and impact. For encrypted reports, request a key via the private advisory thread.
 

@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Questions & help
-    url: https://github.com/nellylemmy/daraja-js/discussions/categories/q-a
+    url: https://github.com/kepas-tech/daraja-js/discussions/categories/q-a
     about: Ask "how do I…" questions in Discussions, not issues.
   - name: Security vulnerability
-    url: https://github.com/nellylemmy/daraja-js/security/advisories/new
+    url: https://github.com/kepas-tech/daraja-js/security/advisories/new
     about: Report vulnerabilities privately. Never in a public issue.

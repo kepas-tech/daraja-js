@@ -22,13 +22,13 @@ the PayBill.
 ## International
 
 M-Pesa is Kenya-only. Cross-border donation rails (e.g. Polar, GitHub Sponsors)
-are not set up yet — if you want one, open a [Discussion](https://github.com/nellylemmy/daraja-js/discussions)
+are not set up yet — if you want one, open a [Discussion](https://github.com/kepas-tech/daraja-js/discussions)
 and we'll prioritize it.
 
 ## Other ways to help (free)
 
 - File precise bug reports with scrubbed payloads.
-- Pick up a [`good-first-issue`](https://github.com/nellylemmy/daraja-js/labels/good-first-issue).
+- Pick up a [`good-first-issue`](https://github.com/kepas-tech/daraja-js/labels/good-first-issue).
 - Tell other Kenyan developers it exists.
 
 ---
