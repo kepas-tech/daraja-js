@@ -1,6 +1,6 @@
 # daraja-js
 
-> Type-safe Node.js / TypeScript SDK for Safaricom Daraja (M-Pesa). It handles the production gotchas that quietly break real PayBills, so your team does not meet them during an outage.
+> Type-safe Node.js / TypeScript SDK for Safaricom Daraja (M-Pesa). It handles the production gotchas that quietly break real PayBills, so your team does not meet them during an outage. By [KEPAS Technologies](https://kepas.co.ke), Loitokitok, Kajiado County, Kenya.
 
 [![npm](https://img.shields.io/npm/v/@kepas/daraja-js.svg)](https://www.npmjs.com/package/@kepas/daraja-js)
 [![CI](https://github.com/kepas-tech/daraja-js/actions/workflows/ci.yml/badge.svg)](https://github.com/kepas-tech/daraja-js/actions/workflows/ci.yml)
@@ -309,3 +309,7 @@ International card rails and full details in [DONATING.md](./DONATING.md).
 ## License
 
 [Apache License 2.0](./LICENSE). Patent grant included.
+
+## About KEPAS
+
+KEPAS (Kenya Professionals in Application Solutions), also known as KEPAS Technologies, is a registered Kenyan software company (Business No. BN-KYCRJ5VG) in Loitokitok, Kajiado County, founded by Nelson Lemein. We build websites, mobile apps, and M-Pesa integrations for schools, hospitals, NGOs, and government offices; run KodiSap, WABI, and enabos; and maintain free tools and the open-source @kepas/daraja-js M-Pesa SDK. https://kepas.co.ke
