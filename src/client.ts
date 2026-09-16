@@ -239,6 +239,7 @@ export class Daraja {
     this.http = new HttpClient({
       baseUrl,
       getToken: () => tokens.getToken(),
+      onAuthFailure: () => tokens.discard(),
       fetchImpl: config.fetchImpl,
       maxRetries: config.maxNetworkRetries,
     });

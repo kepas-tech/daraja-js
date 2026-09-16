@@ -65,6 +65,53 @@ describe('HttpClient.post', () => {
     expect(JSON.stringify(err)).not.toContain('404.001.03');
   });
 
+  it('on a 401 it discards the token and sends the request once more with a fresh one', async () => {
+    const tokens = ['stale', 'fresh'];
+    const seen: string[] = [];
+    let discarded = 0;
+    server.use(
+      http.post(`${BASE}/x`, ({ request }) => {
+        const auth = request.headers.get('authorization') ?? '';
+        seen.push(auth);
+        return auth === 'Bearer fresh'
+          ? HttpResponse.json({ ok: true })
+          : HttpResponse.json({ errorMessage: 'Invalid Access Token' }, { status: 401 });
+      }),
+    );
+    const client = makeClient({
+      getToken: async () => tokens[Math.min(discarded, 1)],
+      onAuthFailure: async () => {
+        discarded += 1;
+      },
+    });
+
+    // Not marked retryable: a 401 never reached M-Pesa, so the second send is safe anyway.
+    await expect(client.post('/x', { a: 1 })).resolves.toEqual({ ok: true });
+    expect(seen).toEqual(['Bearer stale', 'Bearer fresh']);
+    expect(discarded).toBe(1);
+  });
+
+  it('a second 401 with the fresh token is the real answer: one discard, then DarajaAuthError', async () => {
+    let calls = 0;
+    let discarded = 0;
+    server.use(
+      http.post(`${BASE}/x`, () => {
+        calls += 1;
+        return HttpResponse.json({ errorMessage: 'Invalid Access Token' }, { status: 401 });
+      }),
+    );
+    const client = makeClient({
+      onAuthFailure: async () => {
+        discarded += 1;
+      },
+    });
+    await expect(client.post('/x', {}, { retryable: true })).rejects.toBeInstanceOf(
+      DarajaAuthError,
+    );
+    expect(calls).toBe(2);
+    expect(discarded).toBe(1);
+  });
+
   it('a 401 with no readable body keeps the plain message', async () => {
     server.use(http.post(`${BASE}/x`, () => new HttpResponse('nope', { status: 401 })));
     const err = await makeClient()

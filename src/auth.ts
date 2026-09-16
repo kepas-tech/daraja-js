@@ -75,6 +75,23 @@ export class TokenManager {
     }
   }
 
+  /**
+   * Forget the current token, in memory and in the shared store, so the next `getToken()`
+   * mints a fresh one. Daraja's gateway binds a token to the API products the app had when
+   * the token was issued: add a product on the portal and every request to it answers
+   * 401 "Invalid Access Token" until the old token dies, up to an hour later. The transport
+   * calls this on a 401 and sends the request once more with a new token.
+   */
+  async discard(): Promise<void> {
+    this.token = null;
+    this.expiresAtMs = 0;
+    if (this.store && this.cacheKey) {
+      // `adoptCached` refuses an entry whose expiry has passed, so another process that
+      // reads this one fetches afresh instead of adopting the dead token.
+      await this.store.set(this.cacheKey, JSON.stringify({ token: '', expiresAtMs: 0 }), 1);
+    }
+  }
+
   private async refresh(): Promise<string> {
     // Cross-process: another instance may already hold a valid token.
     if (this.store && this.cacheKey) {
