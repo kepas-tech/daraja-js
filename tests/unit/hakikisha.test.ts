@@ -92,6 +92,32 @@ describe('hakikisha.lookup', () => {
     expect((err as DarajaAPIError).requestId).toBe('r-2');
   });
 
+  it("the same 'does not exist' under HTTP 400 (as the portal shows it) carries Safaricom's words too", async () => {
+    mockOAuth();
+    server.use(
+      http.post(ENDPOINT, () =>
+        HttpResponse.json(
+          {
+            header: {
+              requestID: 'r-3',
+              timestamp: '20250603074239',
+              status: '400',
+              message: 'Error',
+            },
+            body: { message: 'The customer does not exist.' },
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+    const err = await makeDaraja()
+      .hakikisha.lookup({ phone: '254722000000' })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(DarajaAPIError);
+    expect((err as Error).message).toBe('The customer does not exist.');
+    expect((err as DarajaAPIError).requestId).toBe('r-3');
+  });
+
   it('refuses a number that is not a Kenyan mobile before any request is sent', async () => {
     mockOAuth();
     await expect(makeDaraja().hakikisha.lookup({ phone: '12345' })).rejects.toBeInstanceOf(
