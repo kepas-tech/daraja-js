@@ -23,6 +23,11 @@ interface HttpClientOptions {
   maxRetries?: number | undefined;
   /** Backoff sleep. Injectable so tests run instantly. */
   sleep?: (ms: number) => Promise<void>;
+  /**
+   * Called once when Daraja answers 401, before the request is sent a second time with a
+   * token from `getToken()`. The TokenManager discards its cached token here.
+   */
+  onAuthFailure?: (() => Promise<void>) | undefined;
 }
 
 interface DarajaErrorBody {
@@ -40,6 +45,7 @@ export class HttpClient {
   private readonly timeoutMs: number;
   private readonly maxRetries: number;
   private readonly sleep: (ms: number) => Promise<void>;
+  private readonly onAuthFailure: (() => Promise<void>) | undefined;
 
   constructor(options: HttpClientOptions) {
     this.baseUrl = options.baseUrl.replace(/\/$/, '');
@@ -48,6 +54,7 @@ export class HttpClient {
     this.timeoutMs = options.timeoutMs ?? 30_000;
     this.maxRetries = options.maxRetries ?? 2;
     this.sleep = options.sleep ?? defaultSleep;
+    this.onAuthFailure = options.onAuthFailure;
   }
 
   /**
@@ -64,6 +71,10 @@ export class HttpClient {
     opts: { retryable?: boolean; headers?: Record<string, string> } = {},
   ): Promise<T> {
     let lastError: unknown;
+    // A 401 comes from the gateway before M-Pesa sees the request, so re-sending with a
+    // fresh token cannot double-process anything; it is allowed even when `retryable` is
+    // false, and it happens once (a second 401 is a real credential problem).
+    let freshTokenTried = false;
     for (let attempt = 0; attempt <= this.maxRetries; attempt += 1) {
       if (attempt > 0) {
         await this.sleep(200 * 2 ** (attempt - 1));
@@ -72,6 +83,12 @@ export class HttpClient {
         return await this.attempt<T>(path, body, opts.headers);
       } catch (err) {
         lastError = err;
+        if (err instanceof DarajaAuthError && !freshTokenTried && this.onAuthFailure) {
+          freshTokenTried = true;
+          await this.onAuthFailure();
+          attempt -= 1; // does not spend a 5xx retry, and no backoff sleep
+          continue;
+        }
         if (!opts.retryable || !isRetryable(err)) {
           throw err;
         }

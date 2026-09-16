@@ -123,4 +123,21 @@ describe('TokenManager with a shared TokenStore', () => {
     expect(await sandbox.getToken()).toBe('sandbox-tok'); // not the prod token
     expect(fetchSandbox).toHaveBeenCalledTimes(1);
   });
+  it('discard() forgets the token here and leaves a dead entry in the store, so every process fetches afresh', async () => {
+    const { store, map } = fakeStore();
+    const fetchToken = vi
+      .fn()
+      .mockResolvedValueOnce({ access_token: 'stale', expires_in: 3599 })
+      .mockResolvedValueOnce({ access_token: 'fresh', expires_in: 3599 });
+    const a = new TokenManager({ fetchToken, store, cacheKey: 'prod' });
+    expect(await a.getToken()).toBe('stale');
+
+    await a.discard();
+
+    expect(await a.getToken()).toBe('fresh');
+    const b = new TokenManager({ fetchToken, store, cacheKey: 'prod' });
+    expect(await b.getToken()).toBe('fresh'); // adopted from the store, not 'stale'
+    expect(fetchToken).toHaveBeenCalledTimes(2);
+    expect(map.get('prod')).toContain('fresh');
+  });
 });
