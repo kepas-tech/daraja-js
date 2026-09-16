@@ -11,12 +11,23 @@
  */
 
 import type { DarajaConfig } from '../client.js';
-import { DarajaValidationError, errorFromResponse } from '../errors.js';
+import { DarajaAuthError, DarajaValidationError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
 
 type BillManagerConfig = Pick<DarajaConfig, 'shortcode' | 'billManagerAppKey'>;
 
 const BASE = '/v1/billmanager-invoice';
+/**
+ * The path Safaricom's own go-live email lists for every Bill Manager proxy on a production app
+ * ("Proxy:Opt-In - https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/optin",
+ * and the same doubled prefix for the rest). The docs page says `/v1/billmanager-invoice/optin`.
+ * The gateway answers the documented path with 401 `404.001.03 Invalid Access Token` — the
+ * refusal it gives when no proxy in the token's products matches the URL — while the same key
+ * runs every other product. So a 401 on the documented path is sent once more on this one. A
+ * 401 never reaches Bill Manager itself, so the second send cannot double anything.
+ * Proof: docs/specs/bill-manager.md, "Production proxy paths".
+ */
+const GATEWAY_BASE = `${BASE}/v1/billmanager-invoice`;
 const ENDPOINTS = {
   optIn: `${BASE}/optin`,
   changeOptIn: `${BASE}/change-optin-details`,
@@ -141,7 +152,15 @@ async function bmPost(
   appKey?: string,
 ): Promise<BillManagerRaw> {
   const opts = appKey ? { headers: { app_key: appKey } } : {};
-  const raw = await http.post<BillManagerRaw>(path, body, opts);
+  let raw: BillManagerRaw;
+  try {
+    raw = await http.post<BillManagerRaw>(path, body, opts);
+  } catch (err) {
+    if (!(err instanceof DarajaAuthError)) {
+      throw err;
+    }
+    raw = await http.post<BillManagerRaw>(path.replace(BASE, GATEWAY_BASE), body, opts);
+  }
   if (raw.rescode !== '200') {
     throw errorFromResponse({
       scope: 'billmanager',

@@ -51,3 +51,31 @@ Request: `{ shortcode, email, officialContact, sendReminders, logo, callbackurl 
 - **Key casing:** lowercase `shortcode`, `callbackurl`, camelCase `officialContact`, `externalReference`, etc. — encode exactly.
 - **409 family:** `Biller already Registered`, `Invalid consumer key/shortcode`, duplicate `externalReference`, incorrect phone format (use `2547…`/`07…`), incorrect due-date format.
 - Bulk invoicing cap: 1000 per call. Reconciliation push retried up to 5×.
+
+## Production proxy paths (Safaricom's go-live email, 2026-09-16)
+
+The docs page (this file, sections 1–7) lists every endpoint under `/v1/billmanager-invoice/…`.
+The go-live email Daraja sends after "Update App" ("Congratulations for Updating your API
+Products on Go-live!") lists what the production app "will be calling", and for the
+**Bill Manager Generic API** product every proxy carries the prefix twice:
+
+```
+Proxy:Opt-In                   https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/optin
+Proxy:Single-Invoicing         https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/single-invoicing
+Proxy:Bulk-Invoicing           https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/bulk-invoicing
+Proxy:Reconciliation           https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/reconciliation
+Proxy:Cancel-Single-Invoicing  https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/cancel-single-invoice
+Proxy:Cancel-Bulk-Invoicing    https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/cancel-bulk-invoice
+Proxy:Update-Onboarding-Details https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/change-optin-details
+Proxy:Update-Single-Invoicing  https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/change-invoice
+Proxy:Update-Bulk-Invoicing    https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/change-invoices
+```
+
+Every other product in the same email matches its docs page exactly (e.g.
+`/mpesa/b2c/v1/paymentrequest`). Observed on a production app with the product ticked: the
+documented path answers HTTP 401 `{"errorCode":"404.001.03","errorMessage":"Invalid Access Token"}`
+with a token minted after the product was added, while the same token runs B2C, balance,
+STK and C2B. That is the gateway's answer when no proxy in the token's products matches
+the URL. The SDK therefore sends a 401 on the documented path once more on the email's path
+(`bmPost` in `src/resources/bill-manager.ts`). A 401 is refused at the gateway before Bill
+Manager sees the request, so the second send cannot double an opt-in or an invoice.
