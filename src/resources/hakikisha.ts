@@ -12,7 +12,7 @@
 
 import { randomUUID } from 'node:crypto';
 import type { DarajaConfig } from '../client.js';
-import { errorFromResponse } from '../errors.js';
+import { DarajaAPIError, errorFromResponse } from '../errors.js';
 import type { HttpClient } from '../http.js';
 import { normalizePhone } from '../validation/phone.js';
 
@@ -55,14 +55,33 @@ export async function lookup(
 ): Promise<HakikishaResult> {
   const msisdn = normalizePhone(input.phone);
   const requestId = input.requestId ?? randomUUID();
-  const raw = await http.post<Raw>(
-    ENDPOINT,
-    {
-      header: { requestID: requestId, timestamp: String(Math.floor(Date.now() / 1000)) },
-      body: { msisdn, shortcode: config.shortcode },
-    },
-    { retryable: true }, // read-only lookup — safe to retry on 5xx
-  );
+  let raw: Raw;
+  try {
+    raw = await http.post<Raw>(
+      ENDPOINT,
+      {
+        header: { requestID: requestId, timestamp: String(Math.floor(Date.now() / 1000)) },
+        body: { msisdn, shortcode: config.shortcode },
+      },
+      { retryable: true }, // read-only lookup — safe to retry on 5xx
+    );
+  } catch (err) {
+    // Safaricom's documented error ("The customer does not exist.") travels in this API's own
+    // envelope, `body.message`, and the portal shows it under HTTP 400. The transport only knows
+    // the top-level `errorMessage` shape, so its message would be the bare "HTTP 400" line; put
+    // Safaricom's words in the message here, the same as for a 200 with `header.status` 400.
+    const body = err instanceof DarajaAPIError ? (err.raw as Raw | undefined) : undefined;
+    if (err instanceof DarajaAPIError && body && typeof body.body?.message === 'string') {
+      throw errorFromResponse({
+        scope: 'hakikisha',
+        responseCode: String(body.header?.status ?? ''),
+        errorMessage: body.body.message,
+        requestId: body.header?.requestID ?? requestId,
+        raw: err.raw,
+      });
+    }
+    throw err;
+  }
   const status = String(raw.header?.status ?? '');
   if (status !== '200') {
     throw errorFromResponse({
