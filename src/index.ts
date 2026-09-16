@@ -104,6 +104,7 @@ export {
   type RegisterUrlsInput,
   type RegisterUrlsResult,
 } from './resources/c2b.js';
+export type { HakikishaLookupInput, HakikishaResult } from './resources/hakikisha.js';
 // Query Org Info — shortcode validation (read-only, synchronous)
 export type { OrgInfoQueryInput, OrgInfoResult } from './resources/org-info.js';
 // Pull Transactions — recon backfill (Daraja 3.0)

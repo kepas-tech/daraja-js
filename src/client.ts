@@ -61,6 +61,11 @@ import {
 } from './resources/bonga.js';
 import { type RegisterUrlsInput, type RegisterUrlsResult, registerUrls } from './resources/c2b.js';
 import {
+  type HakikishaLookupInput,
+  type HakikishaResult,
+  lookup as hakikishaLookup,
+} from './resources/hakikisha.js';
+import {
   type OrgInfoQueryInput,
   type OrgInfoResult,
   query as orgInfoQuery,
@@ -199,6 +204,11 @@ export class Daraja {
     query: (input: OrgInfoQueryInput) => Promise<OrgInfoResult>;
   };
 
+  /** B2C Hakikisha — a customer's (masked) registered name from a phone number, before a payout (read-only). */
+  readonly hakikisha: {
+    lookup: (input: HakikishaLookupInput) => Promise<HakikishaResult>;
+  };
+
   /** Lipa na Bonga — points→KES conversion (read) + redeem points as payment. */
   readonly bonga: {
     calculatePoints: (input: CalculatePointsInput) => Promise<CalculatePointsResult>;
@@ -274,6 +284,9 @@ export class Daraja {
     };
     this.orgInfo = {
       query: (input) => orgInfoQuery(this.http, input),
+    };
+    this.hakikisha = {
+      lookup: (input) => hakikishaLookup(this.http, this.config, input),
     };
     this.bonga = {
       calculatePoints: (input) => bongaCalculatePoints(this.http, input),
