@@ -46,6 +46,33 @@ describe('HttpClient.post', () => {
     await expect(makeClient().post('/x', {})).rejects.toBeInstanceOf(DarajaAuthError);
   });
 
+  it("keeps the gateway's errorMessage on a 401, so a bad token reads differently from a product that is not enabled", async () => {
+    server.use(
+      http.post(`${BASE}/x`, () =>
+        HttpResponse.json(
+          { requestId: 'r-1', errorCode: '404.001.03', errorMessage: 'Invalid Access Token' },
+          { status: 401 },
+        ),
+      ),
+    );
+    const err = await makeClient()
+      .post('/x', {})
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(DarajaAuthError);
+    expect((err as Error).message).toBe('authentication failed (HTTP 401): Invalid Access Token');
+    expect((err as DarajaAuthError).requestId).toBe('r-1');
+    // The body itself is not part of the message and stays non-enumerable in `raw`.
+    expect(JSON.stringify(err)).not.toContain('404.001.03');
+  });
+
+  it('a 401 with no readable body keeps the plain message', async () => {
+    server.use(http.post(`${BASE}/x`, () => new HttpResponse('nope', { status: 401 })));
+    const err = await makeClient()
+      .post('/x', {})
+      .catch((e: unknown) => e);
+    expect((err as Error).message).toBe('authentication failed (HTTP 401)');
+  });
+
   it('retries on 5xx and succeeds on a later attempt', async () => {
     let calls = 0;
     server.use(

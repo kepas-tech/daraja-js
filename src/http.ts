@@ -122,7 +122,14 @@ export class HttpClient {
       const errBody = (json ?? {}) as DarajaErrorBody;
       const ctx = { raw: json ?? text, requestId: errBody.requestId };
       if (res.status === 401) {
-        throw new DarajaAuthError('authentication failed (HTTP 401)', ctx);
+        // Daraja's gateway says why in `errorMessage` ("Invalid Access Token", "Invalid API call as
+        // no apiproduct match found", ...). That text tells a bad token from a product that is not
+        // enabled on the app, so it travels in the message; the body itself stays in `raw`.
+        const why =
+          typeof errBody.errorMessage === 'string' && errBody.errorMessage.trim()
+            ? `: ${errBody.errorMessage.trim()}`
+            : '';
+        throw new DarajaAuthError(`authentication failed (HTTP 401)${why}`, ctx);
       }
       const message = errBody.errorMessage ?? `Daraja request failed (HTTP ${res.status})`;
       throw new DarajaHttpError(res.status, message, ctx);
