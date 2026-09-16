@@ -21,11 +21,13 @@ const BASE = '/v1/billmanager-invoice';
  * The path Safaricom's own go-live email lists for every Bill Manager proxy on a production app
  * ("Proxy:Opt-In - https://api.safaricom.co.ke/v1/billmanager-invoice/v1/billmanager-invoice/optin",
  * and the same doubled prefix for the rest). The docs page says `/v1/billmanager-invoice/optin`.
- * The gateway answers the documented path with 401 `404.001.03 Invalid Access Token` — the
- * refusal it gives when no proxy in the token's products matches the URL — while the same key
- * runs every other product. So a 401 on the documented path is sent once more on this one. A
- * 401 never reaches Bill Manager itself, so the second send cannot double anything.
- * Proof: docs/specs/bill-manager.md, "Production proxy paths".
+ * Observed on a production app with the product ticked and a fresh token: BOTH paths answer
+ * HTTP 401 `{"errorCode":"401","errorMessage":"Unauthorized - Invalid Access Token"}` — Bill
+ * Manager's own envelope, not the gateway's `404.001.03` — while the same key runs every other
+ * product. So the refusal is Bill Manager not knowing the shortcode or app yet (Safaricom's API
+ * support enables it), and the second path is kept only because Safaricom's email names it.
+ * A 401 on either path is refused before any opt-in or invoice is recorded, so the second send
+ * cannot double anything. Proof: docs/specs/bill-manager.md, "Production proxy paths".
  */
 const GATEWAY_BASE = `${BASE}/v1/billmanager-invoice`;
 const ENDPOINTS = {
