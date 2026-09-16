@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.6.0
+
+### Minor Changes
+
+- 8f6e53a: B2C Hakikisha: `hakikisha.lookup({ phone })` returns a customer's registered name (first name in the clear, middle and last masked by Safaricom) from a phone number before a payout. Synchronous, retryable; a non-200 `header.status` throws `DarajaAPIError` with Safaricom's `body.message`. Spec proof in docs/specs/b2c-hakikisha.md.
+
+### Patch Changes
+
+- 7819028: A 401 from Daraja's gateway now discards the cached OAuth token (memory and the shared `TokenStore`) and sends the request once more with a fresh one. Daraja binds a token to the API products the app had when it was issued, so after a product is added on the portal every call to it answered 401 "Invalid Access Token" for up to an hour. The second send is safe for every call: a 401 is refused at the gateway before M-Pesa sees the request. A second 401 with the fresh token still throws `DarajaAuthError`.
+
 ## 1.5.1
 
 ### Patch Changes
