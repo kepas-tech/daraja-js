@@ -2,7 +2,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { Daraja } from '../../src/client.js';
-import { DarajaAPIError, DarajaValidationError } from '../../src/errors.js';
+import { DarajaAPIError, DarajaAuthError, DarajaValidationError } from '../../src/errors.js';
 import { billManagerAck, parseBillManagerPayment } from '../../src/resources/bill-manager.js';
 
 const SANDBOX = 'https://sandbox.safaricom.co.ke';
@@ -91,6 +91,57 @@ describe('billManager.optIn', () => {
     expect(ref.appKey).toBeNull(); // optIn carries no app_key header
     expect(res.appKey).toBe('AG_returned_key');
     expect(res.rescode).toBe('200');
+  });
+
+  it("a 401 on the documented path is sent once more on the path Safaricom's go-live email lists", async () => {
+    mockOAuth();
+    const hits: string[] = [];
+    server.use(
+      http.post(`${BASE}/optin`, ({ request }) => {
+        hits.push(new URL(request.url).pathname);
+        return HttpResponse.json(
+          { requestId: 'r-1', errorCode: '404.001.03', errorMessage: 'Invalid Access Token' },
+          { status: 401 },
+        );
+      }),
+      http.post(`${BASE}/v1/billmanager-invoice/optin`, ({ request }) => {
+        hits.push(new URL(request.url).pathname);
+        return HttpResponse.json({ app_key: 'AG_gateway', resmsg: 'Success', rescode: '200' });
+      }),
+    );
+    const res = await makeDaraja().billManager.optIn({
+      email: 'x@y.com',
+      officialContact: '0710000000',
+      sendReminders: true,
+      callbackUrl: 'https://my.server/cb',
+    });
+    expect(res.appKey).toBe('AG_gateway');
+    expect(hits[0]).toBe('/v1/billmanager-invoice/optin');
+    expect(hits[hits.length - 1]).toBe('/v1/billmanager-invoice/v1/billmanager-invoice/optin');
+    expect(
+      hits.filter((h) => h.endsWith('/v1/billmanager-invoice/v1/billmanager-invoice/optin')),
+    ).toHaveLength(1);
+  });
+
+  it('a 401 on both paths is the real answer: DarajaAuthError', async () => {
+    mockOAuth();
+    const refuse = () =>
+      HttpResponse.json(
+        { requestId: 'r-2', errorCode: '404.001.03', errorMessage: 'Invalid Access Token' },
+        { status: 401 },
+      );
+    server.use(
+      http.post(`${BASE}/optin`, refuse),
+      http.post(`${BASE}/v1/billmanager-invoice/optin`, refuse),
+    );
+    await expect(
+      makeDaraja().billManager.optIn({
+        email: 'x@y.com',
+        officialContact: '0710000000',
+        sendReminders: true,
+        callbackUrl: 'https://my.server/cb',
+      }),
+    ).rejects.toBeInstanceOf(DarajaAuthError);
   });
 
   it('throws DarajaAPIError when optIn returns a non-200 rescode (409)', async () => {
