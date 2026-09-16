@@ -28,7 +28,8 @@ export type DarajaScope =
   | 'billmanager'
   | 'ratiba'
   | 'b2bexpress'
-  | 'bonga';
+  | 'bonga'
+  | 'hakikisha';
 
 export type CodeType = 'responseCode' | 'resultCode' | 'c2bReply' | 'pullStatus';
 

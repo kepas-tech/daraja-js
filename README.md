@@ -236,6 +236,7 @@ Two more come as helpers: amounts of 100 KES or less on B2B PayBill are free (th
 - `balance.query` + `parseBalanceResult` / `parseAccountBalance` — query account balances, with the pipe-delimited parser (gotcha #6).
 - `pull.registerUrl` + `pull.query` — Pull Transaction API (Daraja 3.0) to backfill C2B payments missed when a callback failed (gotcha #10).
 - `orgInfo.query` — validate a shortcode's name + tariff before paying (synchronous; reduces reversals to the wrong till/paybill).
+- `hakikisha.lookup` — B2C Hakikisha: a customer's registered name (first name clear, middle and last masked) from a phone number before a payout (synchronous; needs Safaricom's approval in production).
 - `qr.generate` — dynamic QR codes (Pay Bill / Buy Goods / Send Money / etc.).
 
 **Invoicing:**
