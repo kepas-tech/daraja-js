@@ -45,6 +45,7 @@
 | `2` | resultCode | — | Amount is below M-Pesa’s minimum for this payout. Increase the amount. | no | no | DarajaAPIError | production-observed |
 | `2001` | resultCode | — | Safaricom rejected the API operator credential (wrong operator password or Security Credential). Re-enter the operator password in the Safaricom portal, then set the new credential. | no | yes | DarajaAPIError | safaricom-docs |
 | `8006` | resultCode | — | The API operator's Security Credential is locked. Reset the operator password on the M-Pesa org portal, then set the new credential. | no | yes | DarajaAPIError | safaricom-docs |
+| `TP40153` | resultCode | — | Safaricom refused this because the API operator that signed it has no permission for this API, or is not in this organisation. Fix the operator on the M-Pesa business portal, then try again. | no | yes | DarajaAPIError | production-code |
 
 ## B2B + float transfers (`b2b`)
 
@@ -55,12 +56,14 @@
 | `21` | resultCode | — | The initiator is not permitted to perform this B2B/float operation. Check the initiator name + its role/permissions on the M-Pesa org portal. | no | no | DarajaAPIError | production-observed |
 | `SFC_IC0003` | resultCode | — | The receiver is invalid — wrong destination shortcode, or wrong ReceiverIdentifierType for the CommandID (PayBill=4, BuyGoods=2). | no | no | DarajaAPIError | production-observed |
 | `2001` | resultCode | — | Safaricom rejected the API operator credential (wrong operator password or Security Credential). Re-enter the operator password in the Safaricom portal, then set the new credential. | no | yes | DarajaAPIError | safaricom-docs |
+| `TP40153` | resultCode | — | Safaricom refused this because the API operator that signed it has no permission for this API, or is not in this organisation. Fix the operator on the M-Pesa business portal, then try again. | no | yes | DarajaAPIError | production-code |
 
 ## Account Balance (`balance`)
 
 | Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
 |------|------|---------|---------|-----------|----------|-----------|-------|
 | `0` | resultCode | ✅ | Balance query completed. | no | yes | — | production-observed |
+| `TP40153` | resultCode | — | Safaricom refused this because the API operator that signed it has no permission for this API, or is not in this organisation. Fix the operator on the M-Pesa business portal, then try again. | no | yes | DarajaAPIError | production-code |
 
 ## Transaction Status (`status`)
 
@@ -74,6 +77,7 @@
 | Code | Kind | Success | Meaning | Retriable | Terminal | SDK error | Proof |
 |------|------|---------|---------|-----------|----------|-----------|-------|
 | `0` | resultCode | ✅ | Reversal completed. | no | yes | — | production-observed |
+| `TP40153` | resultCode | — | Safaricom refused this because the API operator that signed it has no permission for this API, or is not in this organisation. Fix the operator on the M-Pesa business portal, then try again. | no | yes | DarajaAPIError | production-code |
 
 ## Dynamic QR (`qr`)
 

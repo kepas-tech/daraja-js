@@ -234,6 +234,19 @@ export const CATALOG: readonly CatalogEntry[] = [
       },
     ],
   },
+  {
+    scope: 'b2c',
+    codeType: 'resultCode',
+    code: 'TP40153',
+    success: false,
+    canonicalMeaning:
+      'The API operator has no permission for this API, or is not in this organisation.',
+    authoredMessage:
+      'Safaricom refused this because the API operator that signed it has no permission for this API, or is not in this organisation. Fix the operator on the M-Pesa business portal, then try again.',
+    retriable: false,
+    terminal: true,
+    proof: [prod()],
+  },
 
   // ── B2B + float transfers (async ResultCode, shared endpoint) ────────────
   {
@@ -304,6 +317,19 @@ export const CATALOG: readonly CatalogEntry[] = [
       },
     ],
   },
+  {
+    scope: 'b2b',
+    codeType: 'resultCode',
+    code: 'TP40153',
+    success: false,
+    canonicalMeaning:
+      'The API operator has no permission for this API, or is not in this organisation.',
+    authoredMessage:
+      'Safaricom refused this because the API operator that signed it has no permission for this API, or is not in this organisation. Fix the operator on the M-Pesa business portal, then try again.',
+    retriable: false,
+    terminal: true,
+    proof: [prod()],
+  },
   // b2b 8006 (security credential locked): add when a proof document for a b2b endpoint lists it.
 
   // ── Account Balance (async ResultCode) ───────────────────────────────────
@@ -317,6 +343,20 @@ export const CATALOG: readonly CatalogEntry[] = [
     retriable: false,
     terminal: true,
     proof: [db()],
+  },
+
+  {
+    scope: 'balance',
+    codeType: 'resultCode',
+    code: 'TP40153',
+    success: false,
+    canonicalMeaning:
+      'The API operator has no permission for this API, or is not in this organisation.',
+    authoredMessage:
+      'Safaricom refused this because the API operator that signed it has no permission for this API, or is not in this organisation. Fix the operator on the M-Pesa business portal, then try again.',
+    retriable: false,
+    terminal: true,
+    proof: [prod()],
   },
 
   // ── Transaction Status (async ResultCode) ────────────────────────────────
@@ -355,6 +395,20 @@ export const CATALOG: readonly CatalogEntry[] = [
     retriable: false,
     terminal: true,
     proof: [db()],
+  },
+
+  {
+    scope: 'reversal',
+    codeType: 'resultCode',
+    code: 'TP40153',
+    success: false,
+    canonicalMeaning:
+      'The API operator has no permission for this API, or is not in this organisation.',
+    authoredMessage:
+      'Safaricom refused this because the API operator that signed it has no permission for this API, or is not in this organisation. Fix the operator on the M-Pesa business portal, then try again.',
+    retriable: false,
+    terminal: true,
+    proof: [prod()],
   },
 
   // ── Synchronous success sentinels (proven by our resource code) ──────────

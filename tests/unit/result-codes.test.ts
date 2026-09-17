@@ -76,6 +76,25 @@ describe('lookup', () => {
     // Still scope-specific: 2001 on stk is not asserted.
     expect(lookup('stk', 'resultCode', '2001')).toBeUndefined();
   });
+
+  it('catalogues TP40153 as an operator-permission failure on the four scopes that see it', () => {
+    for (const scope of ['b2c', 'b2b', 'balance', 'reversal'] as const) {
+      const e = lookup(scope, 'resultCode', 'TP40153');
+      expect(e?.success, scope).toBe(false);
+      expect(e?.canonicalMeaning, scope).toMatch(
+        /no permission .* or is not in this organisation/i,
+      );
+      expect(e?.authoredMessage, scope).toMatch(/operator/i);
+      // Fixing the operator is the only way through: the same request with the same credential
+      // fails again, so the SDK does not invite a blind retry.
+      expect(e?.retriable, scope).toBe(false);
+      expect(e?.terminal, scope).toBe(true);
+      expect(e?.proof.length, scope).toBeGreaterThan(0);
+    }
+    // Scope-specific like every other entry: the same string on an endpoint that has not shown it.
+    expect(lookup('stk', 'resultCode', 'TP40153')).toBeUndefined();
+    expect(lookup('status', 'resultCode', 'TP40153')).toBeUndefined();
+  });
 });
 
 describe('classify', () => {
