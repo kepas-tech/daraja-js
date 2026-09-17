@@ -72,10 +72,21 @@ Proxy:Update-Bulk-Invoicing    https://api.safaricom.co.ke/v1/billmanager-invoic
 ```
 
 Every other product in the same email matches its docs page exactly (e.g.
-`/mpesa/b2c/v1/paymentrequest`). Observed on a production app with the product ticked: the
-documented path answers HTTP 401 `{"errorCode":"404.001.03","errorMessage":"Invalid Access Token"}`
-with a token minted after the product was added, while the same token runs B2C, balance,
-STK and C2B. That is the gateway's answer when no proxy in the token's products matches
-the URL. The SDK therefore sends a 401 on the documented path once more on the email's path
-(`bmPost` in `src/resources/bill-manager.ts`). A 401 is refused at the gateway before Bill
-Manager sees the request, so the second send cannot double an opt-in or an invoice.
+`/mpesa/b2c/v1/paymentrequest`).
+
+Observed on a production app (product "Bill Manager - Prod" ticked, token minted after it was
+added, same token running B2C, balance, STK and C2B): **both** paths answer
+
+```
+HTTP 401 {"errorCode":"401","errorMessage":"Unauthorized - Invalid Access Token"}
+requestId 2b1f-43e4-90e0-f56603679e1a4664, 2026-09-16
+```
+
+That is Bill Manager's own envelope (`errorCode "401"`), not the gateway's
+`404.001.03 Invalid Access Token`, so the request reaches Bill Manager on either path and
+Bill Manager does not yet know the shortcode or app. Safaricom's API support enables that
+(apisupport@safaricom.co.ke, with the paybill and the requestId). The SDK still sends a 401
+on the documented path once more on the email's path (`bmPost` in
+`src/resources/bill-manager.ts`), because Safaricom's own email names it; a 401 on either
+path is refused before any opt-in or invoice is recorded, so the second send cannot double
+anything.
